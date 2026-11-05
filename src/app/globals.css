@@ -9,6 +9,8 @@
   --color-ink-soft: #2a3042;
   --color-brand: #e8501e;
   --color-brand-600: #c9410f;
+  /* Orange for SMALL text: 5.2:1 on white (brand #E8501E is only 3.75:1, fine for fills and large type). */
+  --color-accent: #c2410c;
   --color-brand-100: #fde4d9;
   --color-brand-50: #fff4ee;
   --color-muted: #6b7280;

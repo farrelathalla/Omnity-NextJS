@@ -15,7 +15,7 @@ export function Kicker({ className, ...props }: ComponentProps<"p">) {
   return (
     <p
       className={cn(
-        "text-xs font-semibold uppercase tracking-[0.18em] text-brand",
+        "text-xs font-semibold uppercase tracking-[0.18em] text-accent",
         className,
       )}
       {...props}

@@ -274,7 +274,7 @@ export function HeroPrompt() {
                             )}
                           >
                             {t.name}
-                            {template === t.id ? <Icon name="check" className="size-4 text-brand" /> : null}
+                            {template === t.id ? <Icon name="check" className="size-4 text-accent" /> : null}
                           </button>
                         </li>
                       ))}

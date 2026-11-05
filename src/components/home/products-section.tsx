@@ -42,7 +42,7 @@ export function ProductsSection() {
               <Card interactive className="flex h-full flex-col justify-between overflow-hidden p-6 sm:p-8">
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex size-11 items-center justify-center rounded-xl bg-brand-50 text-brand">
+                    <span className="inline-flex size-11 items-center justify-center rounded-xl bg-brand-50 text-accent">
                       <Icon name={omnipay.icon} className="size-6" />
                     </span>
                     <Badge tone="brand">Unggulan</Badge>
@@ -52,7 +52,7 @@ export function ProductsSection() {
                   <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
                     {omnipayPoints.map((p) => (
                       <li key={p} className="flex items-center gap-2 text-sm text-ink">
-                        <Icon name="check" className="size-4 shrink-0 text-brand" />
+                        <Icon name="check" className="size-4 shrink-0 text-accent" />
                         {p}
                       </li>
                     ))}
@@ -67,7 +67,7 @@ export function ProductsSection() {
                     sizes="(min-width: 1024px) 560px, 90vw"
                     className="h-auto w-full max-w-lg opacity-95"
                   />
-                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand">
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
                     Pelajari OmniPay
                     <Icon name="arrow-right" className="size-4 transition-transform group-hover:translate-x-1" />
                   </span>
@@ -80,12 +80,12 @@ export function ProductsSection() {
             <Reveal key={p.slug} delay={(i + 1) * 60}>
               <Link href={`/produk/${p.slug}`} className="group block h-full">
                 <Card interactive className="flex h-full flex-col p-6">
-                  <span className="inline-flex size-10 items-center justify-center rounded-lg border border-line text-ink transition-colors group-hover:border-brand/30 group-hover:text-brand">
+                  <span className="inline-flex size-10 items-center justify-center rounded-lg border border-line text-ink transition-colors group-hover:border-brand/30 group-hover:text-accent">
                     <Icon name={p.icon} className="size-5" />
                   </span>
                   <h3 className="mt-5 text-lg font-semibold tracking-tight">{p.name}</h3>
                   <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted">{p.short}</p>
-                  <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand">
+                  <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-accent">
                     Pelajari
                     <Icon name="arrow-right" className="size-4 transition-transform group-hover:translate-x-1" />
                   </span>

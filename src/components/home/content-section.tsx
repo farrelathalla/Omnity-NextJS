@@ -28,7 +28,7 @@ export async function ContentSection() {
             />
             <Link
               href="/blog"
-              className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-brand hover:underline lg:self-auto"
+              className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-accent hover:underline lg:self-auto"
             >
               Semua artikel <Icon name="arrow-right" className="size-4" />
             </Link>

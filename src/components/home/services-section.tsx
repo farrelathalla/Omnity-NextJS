@@ -44,7 +44,7 @@ export function ServicesSection() {
                 <ul className="mt-5 space-y-2">
                   {s.points.map((p) => (
                     <li key={p} className="flex items-start gap-2 text-sm text-ink">
-                      <Icon name="check" className="mt-0.5 size-4 shrink-0 text-brand" />
+                      <Icon name="check" className="mt-0.5 size-4 shrink-0 text-accent" />
                       {p}
                     </li>
                   ))}
@@ -52,7 +52,7 @@ export function ServicesSection() {
                 <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 pt-7">
                   <Link
                     href={`/kontak?topik=${s.slug}`}
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline"
                   >
                     Jadwalkan konsultasi <Icon name="arrow-right" className="size-4" />
                   </Link>
@@ -73,12 +73,12 @@ export function ServicesSection() {
             <Reveal key={s.slug} delay={i * 70}>
               <Link href={`/layanan/${s.slug}`} className="group block h-full">
                 <Card interactive className="flex h-full flex-col p-6">
-                  <span className="inline-flex size-10 items-center justify-center rounded-lg border border-line text-ink transition-colors group-hover:border-brand/30 group-hover:text-brand">
+                  <span className="inline-flex size-10 items-center justify-center rounded-lg border border-line text-ink transition-colors group-hover:border-brand/30 group-hover:text-accent">
                     <Icon name={s.icon} className="size-5" />
                   </span>
                   <h3 className="mt-5 text-lg font-semibold tracking-tight">{s.name}</h3>
                   <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted">{s.short}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand">
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent">
                     Selengkapnya
                     <Icon name="arrow-right" className="size-4 transition-transform group-hover:translate-x-1" />
                   </span>

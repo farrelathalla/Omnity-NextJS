@@ -27,7 +27,8 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    formats: ["image/avif", "image/webp"],
+    // WebP only: AVIF encoding on first request is slow and CPU-heavy on shared hosting.
+    formats: ["image/webp"],
     // Next 16 only serves qualities listed here (anything else is HTTP 400).
     qualities: [60, 75, 85],
   },

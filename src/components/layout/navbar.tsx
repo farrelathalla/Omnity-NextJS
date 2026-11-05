@@ -255,7 +255,7 @@ function MenuItem({
       href={href}
       className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-sand"
     >
-      <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-line bg-surface text-ink transition-colors group-hover:border-brand/30 group-hover:text-brand">
+      <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-line bg-surface text-ink transition-colors group-hover:border-brand/30 group-hover:text-accent">
         <Icon name={icon} className="size-[18px]" />
       </span>
       <span className="min-w-0">
@@ -294,7 +294,7 @@ function ProductMenu() {
           <p className="mt-2 text-sm leading-relaxed text-muted">{aiProduct.tagline}</p>
           <Link
             href={`/produk/${aiProduct.slug}`}
-            className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
+            className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline"
           >
             Lihat use case <Icon name="arrow-right" className="size-4" />
           </Link>
@@ -516,7 +516,7 @@ function DrawerLink({
       onClick={onClick}
       className={cn(
         "flex h-11 items-center rounded-lg px-2 text-[0.98rem]",
-        muted ? "font-medium text-brand" : "text-ink/80 hover:bg-ink/5",
+        muted ? "font-medium text-accent" : "text-ink/80 hover:bg-ink/5",
       )}
     >
       {children}

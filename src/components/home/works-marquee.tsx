@@ -46,7 +46,7 @@ export function WorksMarquee() {
         <p className="text-sm text-muted">Ini beberapa karya yang pernah kami buat.</p>
         <Link
           href="/karya"
-          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
+          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
         >
           Lihat semua karya <Icon name="arrow-right" className="size-4" />
         </Link>

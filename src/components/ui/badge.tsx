@@ -8,7 +8,7 @@ const badgeVariants = cva(
     variants: {
       tone: {
         neutral: "bg-ink/5 text-ink-soft",
-        brand: "bg-brand-50 text-brand",
+        brand: "bg-brand-50 text-accent",
         sky: "bg-sky-50 text-sky",
         leaf: "bg-leaf-50 text-leaf",
         dark: "bg-ink text-white",

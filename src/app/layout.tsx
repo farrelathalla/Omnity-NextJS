@@ -3,6 +3,7 @@ import { Inter, Instrument_Serif } from "next/font/google";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
+import { JsonLd } from "@/components/json-ld";
 import { StagingBadge } from "@/components/layout/staging-badge";
 import { MotionProvider } from "@/components/motion/provider";
 import { isStaging, site, siteUrl } from "@/lib/site";
@@ -69,6 +70,24 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </MotionProvider>
         <StagingBadge />
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: site.legalName,
+            alternateName: "Omnity",
+            url: siteUrl,
+            logo: `${siteUrl}/brand/omnity-mark.svg`,
+            email: site.email,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: `${site.address.line1}, ${site.address.line2}`,
+              addressLocality: "Jakarta",
+              postalCode: "12190",
+              addressCountry: "ID",
+            },
+          }}
+        />
       </body>
     </html>
   );

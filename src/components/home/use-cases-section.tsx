@@ -24,7 +24,7 @@ export function UseCasesSection() {
             />
             <Link
               href="/produk/solusi-ai"
-              className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-brand hover:underline lg:self-auto"
+              className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-accent hover:underline lg:self-auto"
             >
               Lihat Solusi AI <Icon name="arrow-right" className="size-4" />
             </Link>
@@ -48,7 +48,7 @@ export function UseCasesSection() {
                     <dd className="mt-1 text-ink/80">{u.problem}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Solusi Omnity</dt>
+                    <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Solusi Omnity</dt>
                     <dd className="mt-1 text-ink/80">{u.solution}</dd>
                   </div>
                   <div className="rounded-xl bg-sand p-3.5">

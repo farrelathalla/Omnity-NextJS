@@ -68,17 +68,17 @@ Commit: `phase 2: homepage sections H1-H8`
 
 ## Fase 3: Halaman statis, form konsultasi, SEO (Langkah 3)
 
-- [ ] Fondasi DB: `drizzle-orm`, `mysql2`, `drizzle-kit`, `src/db/` (koneksi, skema), migrasi pertama, `npm run db:migrate`
-- [ ] `zod`, rate limit berbasis DB, honeypot + timing
-- [ ] Mailer (`nodemailer`) dengan transport dev ke log
-- [ ] `/produk` + `/produk/[slug]` (template: hero, masalah, fitur 3-6, screenshot, use case, integrasi/sertifikasi, FAQ + CTA)
-- [ ] `/layanan` + `/layanan/[slug]` (deskripsi, deliverable, proses, form "Jadwalkan konsultasi")
-- [ ] `/karya` (filter kategori) + `/karya/[slug]` (frame perangkat, galeri sorotan desktop + mobile)
-- [ ] `/tentang`, `/journey`, `/karier`, `/privasi`, `/syarat`, `/forum` ("Segera hadir"), 404 dan error page
-- [ ] `/kontak`: form -> tabel `inquiries` -> email ke admin + konfirmasi ke pengirim
-- [ ] SEO: `generateMetadata` per halaman, Open Graph image, `sitemap.ts`, `robots.ts`, JSON-LD (Organization, BreadcrumbList, Product/Service)
-- [ ] Konten lama dimigrasikan dan ditulis ulang (tanpa placeholder; typo email diperbaiki)
-- [ ] Verifikasi: semua link internal (crawler script), form end-to-end, screenshot 375/1440
+- [x] Fondasi DB: `drizzle-orm`, `mysql2`, `drizzle-kit`, `src/db/` (koneksi, skema), migrasi pertama, `npm run db:migrate`
+- [x] `zod`, rate limit berbasis DB, honeypot + timing
+- [x] Mailer (`nodemailer`) dengan transport dev ke log
+- [x] `/produk` + `/produk/[slug]` (template: hero, masalah, fitur 3-6, screenshot, use case, integrasi/sertifikasi, FAQ + CTA)
+- [x] `/layanan` + `/layanan/[slug]` (deskripsi, deliverable, proses, form "Jadwalkan konsultasi")
+- [x] `/karya` (filter kategori) + `/karya/[slug]` (frame perangkat, galeri sorotan desktop + mobile)
+- [x] `/tentang`, `/journey`, `/karier`, `/privasi`, `/syarat`, `/forum` ("Segera hadir"), 404 dan error page
+- [x] `/kontak`: form -> tabel `inquiries` -> email ke admin + konfirmasi ke pengirim
+- [x] SEO: `generateMetadata` per halaman, Open Graph image, `sitemap.ts`, `robots.ts`, JSON-LD (Organization, BreadcrumbList, Product/Service)
+- [x] Konten lama dimigrasikan dan ditulis ulang (tanpa placeholder; typo email diperbaiki)
+- [x] Verifikasi: semua link internal (crawler script), form end-to-end, screenshot 375/1440
 
 Commit: `phase 3: static pages, contact form, seo`
 
@@ -149,6 +149,18 @@ Commit: `docs: deployment and switching runbooks`
 ## Catatan fase
 
 (Diisi saat tiap fase selesai: keputusan, temuan, utang teknis.)
+
+### Fase 3
+- DB: MySQL/MariaDB lewat Drizzle. Migrasi di `drizzle/`, dijalankan `npm run db:migrate` (hanya butuh dependensi runtime, jadi bisa dijalankan di server). Dev DB: MariaDB terpisah di port 3307 (lihat `.env.example`).
+- Form konsultasi: honeypot, stempel waktu (min 2,5 dtk), rate limit 5/jam/IP (tabel `rate_limits`), simpan ke `inquiries` **sebelum** email dikirim; email ke admin + konfirmasi ke pengirim, dan di dev ditulis ke `storage/outbox/`. Telepon dinormalisasi ke +62. Teruji end-to-end (validasi, honeypot, rate limit, DB, email).
+- Bug yang ditemukan lewat tes: React 19 me-reset field setelah `<form action>` (isian hilang saat error validasi dan stempel waktu kembali 0), jadi form memakai `onSubmit` + `startTransition` dan input stempel dikontrol state.
+- Next 16: `priority` pada `next/image` deprecated (pakai `loading="eager"` + `fetchPriority="high"`), `images.qualities` wajib terdaftar, prop `unstable_retry` pada `error.tsx`, `PageProps<"/route">` bertipe lewat `next typegen`.
+- `Reveal` ditulis ulang: server merender konten TERLIHAT, setelah mount hanya elemen di bawah layar yang disembunyikan lalu diungkap. Ini memperbaiki LCP halaman dalam (3,3 dtk menjadi 0,8 dtk) karena konten di atas layar tidak lagi menunggu hidrasi.
+- Kontras: teks oranye kecil memakai token `accent` `#C2410C` (5,2:1); `brand` `#E8501E` (3,75:1) hanya untuk fill dan teks besar.
+- Optimizer gambar dibatasi ke WebP (AVIF boros CPU di shared hosting). First-hit tiap ukuran gambar lebih lambat sampai cache terisi.
+- Lighthouse mobile (build produksi lokal): beranda 100/100/100/100, produk, layanan, karya, tentang, kontak, privasi 93-100 untuk performa dan 100 untuk A11y, BP, SEO. `npm run check:links` merayapi 32 halaman: 0 link rusak.
+- Stub jujur untuk fase berikutnya: `/blog` (Fase 4), `/masuk` (Fase 4-5), `/mulai` (Fase 6), `/forum` (menunggu Langkah 8).
+- Konten draf yang butuh tinjauan: visi-misi, tahapan Journey, Kebijakan Privasi, Syarat & Ketentuan (lihat `docs/CONTENT_TODO.md`).
 
 ### Fase 2
 - Hasil Lighthouse lokal (build produksi): mobile Perf 100 / A11y 100 / SEO 100 / Best-practices 96 (turun dari 100 hanya karena 404 prefetch menuju halaman Fase 3); desktop Perf 100 / A11y 97 / SEO 100.
