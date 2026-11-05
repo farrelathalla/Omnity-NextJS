@@ -122,15 +122,15 @@ Commit: `phase 6: design anything survey and user dashboard`
 
 ## Fase 7: Admin proyek & penawaran (Langkah 7)
 
-- [ ] `/admin/proyek`: inbox + filter status + cari + urutkan; detail proyek (survei, file, catatan internal)
-- [ ] Ubah status dengan validasi transisi; setiap perubahan tercatat di `project_events` dan mengirim email ke pengguna
-- [ ] Upload mockup berversi (gambar/PDF/link Figma) + catatan; pengguna melihat preview layar penuh (toggle desktop/mobile) dan bisa "Minta revisi" (status `revision_requested`)
-- [ ] Penyusun penawaran: item, harga, DP %, timeline, masa berlaku, syarat, cakupan mockup (mis. "beranda + 4 halaman"), jumlah revisi, domain/hosting termasuk atau tidak
-- [ ] Generate **PDF penawaran** (`pdf-lib`), unduh oleh admin dan pengguna
-- [ ] Pengguna: tab Penawaran (rincian + unduh PDF) dan tombol "Setujui penawaran" -> `awaiting_payment` (gateway pembayaran = Langkah 8, belum dikerjakan)
-- [ ] Notifikasi dalam aplikasi (tabel `notifications`) + email: mockup siap, penawaran siap, revisi diminta, penawaran disetujui; admin diberi email "permintaan baru"
-- [ ] `/admin/pengguna` + ekspor CSV
-- [ ] Verifikasi: alur lengkap dua akun (pengguna dan admin) dari survei sampai penawaran disetujui
+- [x] `/admin/proyek`: inbox + filter status + cari + urutkan; detail proyek (survei, file, catatan internal)
+- [x] Ubah status dengan validasi transisi; setiap perubahan tercatat di `project_events` dan mengirim email ke pengguna
+- [x] Upload mockup berversi (gambar/PDF/link Figma) + catatan; pengguna melihat preview layar penuh (toggle desktop/mobile) dan bisa "Minta revisi" (status `revision_requested`)
+- [x] Penyusun penawaran: item, harga, DP %, timeline, masa berlaku, syarat, cakupan mockup (mis. "beranda + 4 halaman"), jumlah revisi, domain/hosting termasuk atau tidak
+- [x] Generate **PDF penawaran** (`pdf-lib`), unduh oleh admin dan pengguna
+- [x] Pengguna: tab Penawaran (rincian + unduh PDF) dan tombol "Setujui penawaran" -> `awaiting_payment` (gateway pembayaran = Langkah 8, belum dikerjakan)
+- [x] Notifikasi dalam aplikasi (tabel `notifications`) + email: mockup siap, penawaran siap, revisi diminta, penawaran disetujui; admin diberi email "permintaan baru"
+- [x] `/admin/pengguna` + ekspor CSV
+- [x] Verifikasi: alur lengkap dua akun (pengguna dan admin) dari survei sampai penawaran disetujui
 
 Commit: `phase 7: admin projects, mockups, quotes`
 
@@ -149,6 +149,17 @@ Commit: `docs: deployment and switching runbooks`
 ## Catatan fase
 
 (Diisi saat tiap fase selesai: keputusan, temuan, utang teknis.)
+
+### Fase 7
+- Alur: pengguna kirim survei -> admin (`/admin/proyek`) -> Ditinjau -> Pembuatan mockup -> unggah item mockup (gambar, PDF, atau tautan Figma, per layar desktop/mobile) + susun penawaran -> **Simpan & publikasikan** (satu aksi: mockup + penawaran terbit, status jadi "Mockup & penawaran tersedia", pengguna diberi email dan notifikasi) -> pengguna meninjau di viewer (versi, toggle desktop/mobile, layar penuh) -> **Minta revisi** (catatan wajib) atau **Setujui penawaran** -> Menunggu pembayaran -> Dalam pengerjaan -> Selesai. Pembayaran online (gateway) = Langkah 8, belum dikerjakan; setelah disetujui tim menghubungi pengguna untuk DP.
+- Status: transisi dikunci di server oleh `TRANSITIONS` (pengguna tidak bisa ke status yang tidak sah, admin hanya melihat opsi yang valid). "Mockup siap" hanya bisa dicapai lewat publikasi sehingga pengguna tidak pernah melihat status siap tanpa isi. Perubahan memakai compare-and-set (tab basi/klik ganda aman); setiap perubahan masuk `project_events` dengan pelaku + catatan, dan mengirim email + notifikasi.
+- Mockup berversi: item ditambah ke versi yang belum terbit; setelah terbit, unggahan berikutnya otomatis membuka versi baru. Pengguna hanya bisa membuka file mockup yang SUDAH terbit dan milik proyeknya; file draf tetap 404 (teruji). PDF divalidasi dari signature `%PDF-`, tautan wajib https.
+- Penawaran: item (qty x harga), diskon, DP %, cakupan, jumlah revisi, domain/hosting termasuk atau tidak, estimasi waktu, masa berlaku, syarat. Total dihitung ulang di server (klien hanya pratinjau). Menerbitkan versi baru menandai penawaran lama `superseded`; penawaran kedaluwarsa tidak bisa disetujui. PDF dibuat on-demand dengan `pdf-lib` (tanpa headless browser), draf hanya bisa dilihat admin.
+- Notifikasi dalam aplikasi: badge angka di "Proyek Saya" (belum dibaca) dan daftar di `/proyek`; membuka proyek menandai dibaca.
+- Admin juga mendapat `/admin/konsultasi` (daftar permintaan form kontak) dan `/admin/pengguna` + ekspor CSV (sel berawalan `= + - @` diberi `'` agar tidak dieksekusi spreadsheet; non-admin 404).
+- Bug yang ditemukan lewat tes dan diperbaiki: komponen di-remount oleh `key` setelah simpan sehingga pesan hasil hilang (kini key stabil), wording email revisi kini mengikuti nomor versi.
+- Teruji end-to-end (91 asersi, termasuk isolasi antar pengguna, file draf vs terbit, PDF nyata, CSV, 375 px tanpa overflow). PDF dirender dan diperiksa secara visual.
+- Belum ada: pembayaran online dan forum (Langkah 8), draf mockup berbantuan AI, kalkulator penawaran otomatis (fase berikutnya di brief).
 
 ### Fase 6
 - Alur: `/mulai` (pilih template + prompt) atau hero -> daftar/masuk bila perlu -> `/mulai/baru` membuat draf dari prompt + template (idempoten: draf kosong 10 menit terakhir dipakai ulang) -> wizard 8 langkah di `/mulai/survei/[id]` -> kirim -> `/proyek/[id]`. Prompt dan template disimpan di `localStorage` 24 jam (bukan sessionStorage): link verifikasi email biasanya terbuka di tab baru, dan teruji bahwa pilihan tetap terbawa.

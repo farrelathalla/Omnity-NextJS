@@ -1,9 +1,25 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { projects, uploads } from "@/db/schema";
+import { mockups, projects, uploads } from "@/db/schema";
+import { and, isNotNull } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/auth";
 import { readStored, removeStored } from "@/lib/storage";
+
+/**
+ * Mockup files are uploaded by admins, so the customer is not the file's owner.
+ * They may read one only when it belongs to THEIR project and its version is published.
+ */
+async function ownsPublishedMockup(fileId: string, kind: string, userId: number) {
+  if (kind !== "mockup") return false;
+  const [row] = await db()
+    .select({ owner: projects.userId })
+    .from(mockups)
+    .innerJoin(projects, eq(projects.id, mockups.projectId))
+    .where(and(eq(mockups.fileId, fileId), isNotNull(mockups.publishedAt)))
+    .limit(1);
+  return row?.owner === userId;
+}
 
 async function authorise(id: string) {
   const user = await getCurrentUser();
@@ -14,7 +30,9 @@ async function authorise(id: string) {
   // Same 404 for "missing" and "not yours", so ids cannot be probed.
   if (!file || file.visibility !== "private") return { error: new NextResponse("Not found", { status: 404 }) };
   const isAdmin = user.role === "admin";
-  if (!isAdmin && file.ownerId !== user.id) return { error: new NextResponse("Not found", { status: 404 }) };
+  if (!isAdmin && file.ownerId !== user.id && !(await ownsPublishedMockup(file.id, file.kind, user.id))) {
+    return { error: new NextResponse("Not found", { status: 404 }) };
+  }
   return { user, file, isAdmin };
 }
 
@@ -28,6 +46,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/files/[id]">) {
   return new NextResponse(new Uint8Array(data), {
     headers: {
       "Content-Type": a.file.mime,
+      "Content-Disposition": `inline; filename="${(a.file.originalName ?? "file").replace(/[^\w.\- ]/g, "_")}"`,
       "Cache-Control": "private, max-age=3600",
       "X-Content-Type-Options": "nosniff",
     },

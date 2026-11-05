@@ -93,3 +93,11 @@ export const TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
   completed: [],
   cancelled: [],
 };
+
+/**
+ * Statuses an admin can pick by hand. "mockup_ready" is deliberately excluded: it is only
+ * reached by publishing a mockup together with a quote, so the customer never sees an
+ * empty "ready" project.
+ */
+export const adminNextStatuses = (from: ProjectStatus): ProjectStatus[] =>
+  TRANSITIONS[from].filter((s) => s !== "mockup_ready");

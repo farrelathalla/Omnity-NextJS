@@ -2,12 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Icon } from "@/components/icon";
+import { MockupViewer, QuoteView, type ViewerVersion } from "@/components/projects/deliverables";
 import { StatusBadge, StatusStepper } from "@/components/projects/status";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/section";
+import { db } from "@/db";
+import { mockups, quotes } from "@/db/schema";
+import { and, asc, desc, eq, isNotNull, ne } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
+import { markProjectNotificationsRead } from "@/lib/notify";
+import { isExpired, parseItems } from "@/lib/quote";
 import { getOwnedProject, getProjectEvents, getProjectFiles, statusOf } from "@/lib/projects";
 import { STATUS_HINT, STATUS_LABEL, isStatus } from "@/lib/project-status";
 import { parseSurvey, summaryRows } from "@/lib/survey";
@@ -40,9 +46,24 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
   const status = statusOf(project);
   if (status === "draft") redirect(`/mulai/survei/${id}`);
 
-  const tab = TABS.find((t) => t.id === first(sp.tab))?.id ?? "ringkasan";
+  const tab = TABS.find((t) => t.id === first(sp.tab))?.id ?? (status === "mockup_ready" ? "mockup" : "ringkasan");
   const sent = first(sp.terkirim) === "1";
-  const [files, events] = await Promise.all([getProjectFiles(id), getProjectEvents(id)]);
+  const [files, events, publishedMockups, quoteRows] = await Promise.all([
+    getProjectFiles(id),
+    getProjectEvents(id),
+    // customers only ever see published items
+    db().select().from(mockups).where(and(eq(mockups.projectId, id), isNotNull(mockups.publishedAt))).orderBy(asc(mockups.version), asc(mockups.id)),
+    db().select().from(quotes).where(and(eq(quotes.projectId, id), ne(quotes.status, "draft"))).orderBy(desc(quotes.version)),
+  ]);
+  await markProjectNotificationsRead(user.id, id);
+  const versions: ViewerVersion[] = [...new Set(publishedMockups.map((m) => m.version))].map((v) => ({
+    version: v,
+    items: publishedMockups
+      .filter((m) => m.version === v)
+      .map((m) => ({ id: m.id, title: m.title, device: m.device, kind: m.kind, fileId: m.fileId, url: m.url, note: m.note })),
+  }));
+  const quote = quoteRows.find((q) => q.status === "sent" || q.status === "approved") ?? quoteRows[0];
+  const dateOnly = (d: Date | null) => (d ? formatDateId(d) : null);
   const survey = parseSurvey(project.survey);
   const sections = summaryRows(survey, files.some((f) => f.id === survey.brand.logo));
 
@@ -133,27 +154,55 @@ export default async function ProjectPage({ params, searchParams }: PageProps<"/
           ) : null}
 
           {tab === "mockup" ? (
-            <Card className="border-dashed bg-transparent p-10 text-center shadow-none">
-              <span className="mx-auto inline-flex size-12 items-center justify-center rounded-xl bg-sand">
-                <Icon name="monitor" className="size-6" />
-              </span>
-              <h2 className="mt-5 font-serif text-3xl tracking-tight">Mockup belum tersedia.</h2>
-              <p className="mx-auto mt-2 max-w-md text-muted">
-                Tim kami sedang menyiapkannya. Saat siap, mockup muncul di sini dan Anda mendapat email.
-              </p>
-            </Card>
+            versions.length > 0 ? (
+              <MockupViewer projectId={id} versions={versions} canRevise={status === "mockup_ready"} />
+            ) : (
+              <Card className="border-dashed bg-transparent p-10 text-center shadow-none">
+                <span className="mx-auto inline-flex size-12 items-center justify-center rounded-xl bg-sand">
+                  <Icon name="monitor" className="size-6" />
+                </span>
+                <h2 className="mt-5 font-serif text-3xl tracking-tight">Mockup belum tersedia.</h2>
+                <p className="mx-auto mt-2 max-w-md text-muted">
+                  Tim kami sedang menyiapkannya. Saat siap, mockup muncul di sini dan Anda mendapat email.
+                </p>
+              </Card>
+            )
           ) : null}
 
           {tab === "penawaran" ? (
-            <Card className="border-dashed bg-transparent p-10 text-center shadow-none">
-              <span className="mx-auto inline-flex size-12 items-center justify-center rounded-xl bg-sand">
-                <Icon name="file-text" className="size-6" />
-              </span>
-              <h2 className="mt-5 font-serif text-3xl tracking-tight">Penawaran belum tersedia.</h2>
-              <p className="mx-auto mt-2 max-w-md text-muted">
-                Penawaran (cakupan, biaya, estimasi waktu) dikirim bersama mockup.
-              </p>
-            </Card>
+            quote ? (
+              <QuoteView
+                projectId={id}
+                canApprove={status === "mockup_ready" && quote.status === "sent"}
+                quote={{
+                  id: quote.id,
+                  version: quote.version,
+                  status: quote.status,
+                  items: parseItems(quote.items),
+                  discount: quote.discount,
+                  dpPercent: quote.dpPercent,
+                  timeline: quote.timeline,
+                  validUntil: dateOnly(quote.validUntil),
+                  expired: isExpired(quote.validUntil),
+                  scope: quote.scope,
+                  revisions: quote.revisions,
+                  domainHosting: quote.domainHosting,
+                  terms: quote.terms,
+                  sentAt: dateOnly(quote.sentAt),
+                  approvedAt: dateOnly(quote.approvedAt),
+                }}
+              />
+            ) : (
+              <Card className="border-dashed bg-transparent p-10 text-center shadow-none">
+                <span className="mx-auto inline-flex size-12 items-center justify-center rounded-xl bg-sand">
+                  <Icon name="file-text" className="size-6" />
+                </span>
+                <h2 className="mt-5 font-serif text-3xl tracking-tight">Penawaran belum tersedia.</h2>
+                <p className="mx-auto mt-2 max-w-md text-muted">
+                  Penawaran (cakupan, biaya, estimasi waktu) dikirim bersama mockup.
+                </p>
+              </Card>
+            )
           ) : null}
 
           {tab === "riwayat" ? (

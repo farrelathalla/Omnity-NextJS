@@ -32,6 +32,7 @@
     "mysql2": "^3.24.6",
     "next": "16.4.5",
     "nodemailer": "^10.3.1",
+    "pdf-lib": "^1.17.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "sanitize-html": "^2.18.1",

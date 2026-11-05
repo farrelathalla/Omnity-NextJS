@@ -6,7 +6,10 @@ import { Icon, type IconName } from "@/components/icon";
 
 const nav: { href: string; label: string; icon: IconName }[] = [
   { href: "/admin", label: "Ringkasan", icon: "layers" },
+  { href: "/admin/proyek", label: "Proyek", icon: "template" },
   { href: "/admin/blog", label: "Blog", icon: "file-text" },
+  { href: "/admin/konsultasi", label: "Konsultasi", icon: "message" },
+  { href: "/admin/pengguna", label: "Pengguna", icon: "users" },
 ];
 
 /** Plain admin chrome: no marketing navbar or footer. */

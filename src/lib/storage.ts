@@ -26,6 +26,8 @@ export async function saveImage(opts: {
   kind: string;
   ownerId: number;
   crop169?: boolean;
+  /** max output width (default 1600); mockups use more */
+  maxWidth?: number;
   /** private files live under UPLOAD_DIR/private and are never served by /uploads/* */
   visibility?: "public" | "private";
   projectId?: string;
@@ -50,7 +52,7 @@ export async function saveImage(opts: {
   let pipeline = sharp(opts.buffer, { limitInputPixels: 100_000_000 }).rotate();
   pipeline = opts.crop169
     ? pipeline.resize(1600, 900, { fit: "cover", position: "attention" })
-    : pipeline.resize({ width: 1600, withoutEnlargement: true });
+    : pipeline.resize({ width: opts.maxWidth ?? 1600, withoutEnlargement: true });
   const out = await pipeline.webp({ quality: 82 }).toBuffer();
 
   const now = new Date();
@@ -93,4 +95,38 @@ export async function removeStored(rel: string) {
   const abs = path.resolve(root, rel);
   if (!abs.startsWith(root + path.sep)) return;
   await unlink(abs).catch(() => {});
+}
+
+export const MAX_PDF_BYTES = 15 * 1024 * 1024;
+
+/** Stores a PDF privately. Validated by its signature, not by its name; never served from /uploads. */
+export async function savePdf(opts: {
+  buffer: Buffer;
+  kind: string;
+  ownerId: number;
+  projectId?: string;
+  originalName?: string;
+}) {
+  if (opts.buffer.length > MAX_PDF_BYTES) throw new UploadError("Ukuran PDF maksimal 15 MB.");
+  if (opts.buffer.subarray(0, 5).toString("latin1") !== "%PDF-") throw new UploadError("File bukan PDF yang valid.");
+
+  const now = new Date();
+  const rel = `private/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${randomBytes(9).toString("hex")}.pdf`;
+  const abs = path.join(uploadRoot(), rel);
+  await mkdir(path.dirname(abs), { recursive: true });
+  await writeFile(abs, opts.buffer);
+
+  const id = randomBytes(16).toString("hex");
+  await db().insert(uploads).values({
+    id,
+    kind: opts.kind,
+    path: rel,
+    mime: "application/pdf",
+    size: opts.buffer.length,
+    ownerId: opts.ownerId,
+    visibility: "private",
+    projectId: opts.projectId ?? null,
+    originalName: opts.originalName?.slice(0, 160) ?? null,
+  });
+  return { id, path: rel, url: `/api/files/${id}` };
 }

@@ -168,6 +168,79 @@ export const projectEvents = mysqlTable(
   (t) => [index("project_events_project_idx").on(t.projectId, t.createdAt)],
 );
 
+
+/**
+ * Design deliverables. Items are grouped by `version`; a version is invisible to the
+ * customer until `publishedAt` is set (so admins can upload page by page, then publish).
+ */
+export const mockups = mysqlTable(
+  "mockups",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    projectId: varchar("project_id", { length: 16 }).notNull(),
+    version: int("version").notNull().default(1),
+    title: varchar("title", { length: 120 }).notNull(),
+    device: varchar("device", { length: 8 }).notNull().default("any"), // desktop | mobile | any
+    kind: varchar("kind", { length: 8 }).notNull(), // image | pdf | link
+    fileId: varchar("file_id", { length: 32 }),
+    url: varchar("url", { length: 400 }),
+    note: text("note"),
+    publishedAt: datetime("published_at", { mode: "date" }),
+    createdBy: int("created_by"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("mockups_project_idx").on(t.projectId, t.version)],
+);
+
+/** A priced offer. Money is whole rupiah. Only one non-superseded quote per project is live at a time. */
+export const quotes = mysqlTable(
+  "quotes",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    projectId: varchar("project_id", { length: 16 }).notNull(),
+    version: int("version").notNull().default(1),
+    status: varchar("status", { length: 12 }).notNull().default("draft"), // draft | sent | approved | superseded
+    /** JSON: [{ label, detail, qty, unitPrice }] */
+    items: longtext("items").notNull(),
+    discount: int("discount").notNull().default(0),
+    dpPercent: int("dp_percent").notNull().default(50),
+    /** computed on the server whenever the quote is saved */
+    total: int("total").notNull().default(0),
+    timeline: varchar("timeline", { length: 200 }).notNull().default(""),
+    validUntil: datetime("valid_until", { mode: "date" }),
+    /** what the mockup/package covers, e.g. "Beranda + 4 halaman" */
+    scope: text("scope"),
+    revisions: int("revisions").notNull().default(1),
+    domainHosting: varchar("domain_hosting", { length: 200 }).notNull().default(""),
+    terms: text("terms"),
+    sentAt: datetime("sent_at", { mode: "date" }),
+    approvedAt: datetime("approved_at", { mode: "date" }),
+    createdBy: int("created_by"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (t) => [index("quotes_project_idx").on(t.projectId, t.version)],
+);
+
+/** In-app notifications (the badge on "Proyek Saya"). Every one is also emailed. */
+export const notifications = mysqlTable(
+  "notifications",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("user_id").notNull(),
+    title: varchar("title", { length: 160 }).notNull(),
+    body: varchar("body", { length: 400 }).notNull().default(""),
+    href: varchar("href", { length: 200 }).notNull().default("/proyek"),
+    readAt: datetime("read_at", { mode: "date" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("notifications_user_idx").on(t.userId, t.readAt)],
+);
+
+export type Mockup = typeof mockups.$inferSelect;
+export type Quote = typeof quotes.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
+
 export type Project = typeof projects.$inferSelect;
 export type ProjectEvent = typeof projectEvents.$inferSelect;
 export type User = typeof users.$inferSelect;
