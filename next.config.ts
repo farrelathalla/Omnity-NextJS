@@ -18,6 +18,11 @@ const isStaging = process.env.SITE_ENV === "staging";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Hostinger publishes the standalone output, which only contains traced imports.
+  // The SQL migrations are read from disk at boot (AUTO_MIGRATE), so ship them too.
+  outputFileTracingIncludes: {
+    "/*": ["./drizzle/**/*"],
+  },
   experimental: {
     // Shared hosting exposes dozens of cores but little memory: Next's default (one
     // prerender worker per core, 55 on Hostinger) is killed with SIGABRT. Keep it small.
