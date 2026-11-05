@@ -136,11 +136,11 @@ Commit: `phase 7: admin projects, mockups, quotes`
 
 ## Fase 8: Deploy staging (di luar Langkah 1-7, atas permintaan)
 
-- [ ] `docs/DEPLOYMENT.md`: variabel env, build/start, MySQL Hostinger, `UPLOAD_DIR`, migrasi
-- [ ] `docs/SWITCHING.md`: cutover dan rollback ke WordPress lama (satu langkah)
-- [ ] `docs/CONTENT_TODO.md`: daftar konten yang harus dikonfirmasi klien
-- [ ] Buat `staging.omnity.co.id` (website Node.js baru + A record `staging` di zona DNS) dan deploy
-- [ ] Bila subdomain tidak bisa: tanya dulu sebelum memakai domain utama
+- [x] `docs/DEPLOYMENT.md`: variabel env, build/start, MySQL Hostinger, `UPLOAD_DIR`, migrasi
+- [x] `docs/SWITCHING.md`: cutover dan rollback ke WordPress lama (cepat: A record kembali ke cPanel; lengkap: restore backup)
+- [x] `docs/CONTENT_TODO.md`: daftar konten yang harus dikonfirmasi klien
+- [x] Buat `staging.omnity.co.id` (website Node.js baru + A record `staging` di zona DNS) dan deploy: https://staging.omnity.co.id
+- [x] Subdomain bisa dibuat, jadi domain utama tidak disentuh (tetap WordPress)
 
 Commit: `docs: deployment and switching runbooks`
 
@@ -149,6 +149,14 @@ Commit: `docs: deployment and switching runbooks`
 ## Catatan fase
 
 (Diisi saat tiap fase selesai: keputusan, temuan, utang teknis.)
+
+### Fase 8
+- Staging live di `https://staging.omnity.co.id` (SSL valid, `noindex`, lencana pratinjau). `omnity.co.id` tidak disentuh dan masih WordPress. A record `staging` ditambahkan di zona cPanel lama (backup zona disimpan sebelum diubah).
+- Deploy lewat unggah arsip (`git archive`) karena repo privat belum diberi akses di Git hPanel; lihat `docs/DEPLOYMENT.md` bagian 3.
+- Tiga masalah build di Hostinger, semuanya sudah diperbaiki: (1) Turbopack gagal di langkah CSS (proses worker Node langsung mati), jadi build memakai `--webpack` dan Tailwind lewat `@tailwindcss/postcss`; (2) 55 worker prerender (satu per core) membuat build `SIGABRT`, kini dibatasi `experimental.cpus = 2`; (3) output standalone tidak memuat folder `drizzle/`, jadi migrasi saat start gagal (`Can't find meta/_journal.json`), diperbaiki dengan `outputFileTracingIncludes`.
+- Terverifikasi di staging: 10 halaman publik 200, login admin asli, 4 halaman admin 200, 0 error JS, optimizer gambar (sharp) 200, unggah gambar admin tersimpan di `UPLOAD_DIR` dan tersaji, migrasi + admin pertama dibuat otomatis (log `[startup]`), upload PNG rusak ditolak.
+- Belum terverifikasi: pengiriman email nyata (staging tanpa SMTP), token exchange Google OAuth, dan cutover domain utama (butuh persetujuan; lihat `docs/SWITCHING.md`).
+- Bug lokal yang bukan bug aplikasi: build webpack di path ber-apostrof (`Farrel's Laptop`) gagal. Pengecekan lokal memakai `next build` (Turbopack) atau drive tanpa apostrof.
 
 ### Fase 7
 - Alur: pengguna kirim survei -> admin (`/admin/proyek`) -> Ditinjau -> Pembuatan mockup -> unggah item mockup (gambar, PDF, atau tautan Figma, per layar desktop/mobile) + susun penawaran -> **Simpan & publikasikan** (satu aksi: mockup + penawaran terbit, status jadi "Mockup & penawaran tersedia", pengguna diberi email dan notifikasi) -> pengguna meninjau di viewer (versi, toggle desktop/mobile, layar penuh) -> **Minta revisi** (catatan wajib) atau **Setujui penawaran** -> Menunggu pembayaran -> Dalam pengerjaan -> Selesai. Pembayaran online (gateway) = Langkah 8, belum dikerjakan; setelah disetujui tim menghubungi pengguna untuk DP.

@@ -30,4 +30,6 @@ dan harus diganti/dikonfirmasi sebelum situs diluncurkan.
 | 22 | SMTP untuk email | Belum diisi; email dev ditulis ke `storage/outbox/` | `.env` (SMTP_*) | Kredensial SMTP (mis. mailbox Hostinger) untuk `corporate@omnity.co.id` |
 | 23 | Kredensial Google OAuth | Belum ada, tombol "Lanjutkan dengan Google" tersembunyi | `.env` (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) | OAuth client di Google Cloud Console dengan redirect URI `https://<domain>/api/auth/google/callback` (satu per domain: staging dan produksi) |
 | 24 | Pengirim email transaksional | `no-reply@omnity.co.id` (belum ada mailbox/SPF/DKIM) | `.env` (`MAIL_FROM`, `SMTP_*`) | Mailbox pengirim + SPF/DKIM agar email verifikasi tidak masuk spam |
-
+| 25 | Akses GitHub di Hostinger | Staging di-deploy dari arsip karena repo privat belum terhubung ke Git hPanel | hPanel > Websites > Manage > Advanced > Git | Beri akses `farrelathalla/Omnity-NextJS` ke integrasi Git Hostinger agar push ke `main` ter-deploy otomatis |
+| 26 | Persetujuan cutover `omnity.co.id` | Belum dilakukan; WordPress tetap live | `docs/SWITCHING.md` | Persetujuan tertulis pemilik + jadwal; cutover menimpa file WordPress di `public_html` |
+| 27 | Daftar URL WordPress lama untuk redirect 301 | Belum diaudit | `docs/SWITCHING.md`, `next.config.ts` | Ekspor `/wp-sitemap.xml` dan petakan ke rute baru |
