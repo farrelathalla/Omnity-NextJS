@@ -1,8 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Serif } from "next/font/google";
-import { AnnouncementBar } from "@/components/layout/announcement-bar";
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
 import { JsonLd } from "@/components/json-ld";
 import { StagingBadge } from "@/components/layout/staging-badge";
 import { MotionProvider } from "@/components/motion/provider";
@@ -59,15 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Lewati ke konten
         </a>
         <MotionProvider>
-          {/* night background shows through the sheet's rounded bottom corners */}
-          <div className="bg-night">
-            <div className="relative z-10 rounded-b-[1.75rem] bg-canvas shadow-[0_30px_60px_-30px_rgb(0_0_0/0.35)] reveal:rounded-b-[2.5rem]">
-              <AnnouncementBar />
-              <Navbar />
-              <main id="main">{children}</main>
-            </div>
-            <Footer />
-          </div>
+          {children}
         </MotionProvider>
         <StagingBadge />
         <JsonLd

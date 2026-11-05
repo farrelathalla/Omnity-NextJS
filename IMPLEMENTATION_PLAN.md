@@ -84,13 +84,13 @@ Commit: `phase 3: static pages, contact form, seo`
 
 ## Fase 4: Blog + admin posting (Langkah 4)
 
-- [ ] Tabel `posts` (judul, slug, cover, isi HTML, ringkasan, status draft/terbit/terjadwal, `published_at`, `author_id`), **tanpa kategori**
-- [ ] Inti auth minimal untuk admin: tabel `users` (role), hash bcrypt, sesi cookie JWT, `requireAdmin()`, seed admin dari env, `/masuk`
-- [ ] `/blog` (artikel unggulan besar + grid kartu, cari, "Muat lebih banyak") dan `/blog/[slug]` (cover, serif, penulis, tanggal, waktu baca, lebar baca ~680 px, share, artikel terkait)
-- [ ] `/admin/blog`: daftar + cari + hapus (konfirmasi), buat/edit dengan Tiptap (heading, bold, list, link, kutipan, sisip foto), upload cover (crop 16:9, WebP), slug otomatis, ringkasan otomatis, draft/terbit/jadwalkan, preview
-- [ ] Pelayan file upload (`UPLOAD_DIR`) dengan cache header
-- [ ] Beranda H7 membaca artikel terbaru dari DB; sitemap memuat artikel
-- [ ] Verifikasi: tulis artikel contoh end-to-end, cek jadwal terbit, screenshot
+- [x] Tabel `posts` (judul, slug, cover, isi HTML, ringkasan, status draft/terbit/terjadwal, `published_at`, `author_id`), **tanpa kategori**
+- [x] Inti auth minimal untuk admin: tabel `users` (role), hash bcrypt, sesi cookie JWT, `requireAdmin()`, seed admin dari env, `/masuk`
+- [x] `/blog` (artikel unggulan besar + grid kartu, cari, "Muat lebih banyak") dan `/blog/[slug]` (cover, serif, penulis, tanggal, waktu baca, lebar baca ~680 px, share, artikel terkait)
+- [x] `/admin/blog`: daftar + cari + hapus (konfirmasi), buat/edit dengan Tiptap (heading, bold, list, link, kutipan, sisip foto), upload cover (crop 16:9, WebP), slug otomatis, ringkasan otomatis, draft/terbit/jadwalkan, preview
+- [x] Pelayan file upload (`UPLOAD_DIR`) dengan cache header
+- [x] Beranda H7 membaca artikel terbaru dari DB; sitemap memuat artikel
+- [x] Verifikasi: tulis artikel contoh end-to-end, cek jadwal terbit, screenshot
 
 Commit: `phase 4: blog and admin posting`
 
@@ -149,6 +149,16 @@ Commit: `docs: deployment and switching runbooks`
 ## Catatan fase
 
 (Diisi saat tiap fase selesai: keputusan, temuan, utang teknis.)
+
+### Fase 4
+- Struktur: route group `(site)` (navbar + footer) dan `(admin)` (shell sendiri). `SiteShell` dipakai juga oleh `not-found.tsx` agar 404 tetap punya navigasi. Navbar belum sadar-login (Fase 5) supaya halaman marketing tetap statis dan cepat.
+- Auth inti: JWT HS256 (`jose`) di cookie httpOnly, `token_version` dicek ke DB tiap request (cabut sesi seketika), bcrypt cost 12 dengan hash palsu untuk akun tak ada (waktu respons sama), rate limit login per IP dan per email, `safeNext()` menolak open redirect. `proxy.ts` hanya gerbang optimistis (cek ada cookie, menjaga `?next=` penuh); pemeriksaan sebenarnya (`requireAdmin`) ada di layout, setiap halaman, setiap action, dan route upload.
+- Editor Tiptap v3 (StarterKit sudah memuat Link dan Underline). HTML disanitasi saat simpan (`sanitize-html`): script, iframe, `on*`, `javascript:`, style, dan gambar di luar `/uploads` atau https dibuang; tautan eksternal otomatis `rel=noopener`. Teruji dengan payload XSS lewat form sungguhan.
+- Upload gambar: divalidasi dengan men-decode (bukan percaya ekstensi), maks 8 MB, cover dipotong 16:9 (`position: attention`), semua jadi WebP tanpa metadata, nama acak, tersimpan di `UPLOAD_DIR`. API upload: admin saja, cek Origin, rate limit 60/jam.
+- "Terjadwal" = status terbit dengan `published_at` di masa depan; publik hanya melihat `published_at <= NOW()`. Beranda dan `/blog/[slug]` memakai ISR (5 menit dan 60 detik) plus `revalidatePath` saat simpan/hapus, sehingga build tidak butuh DB.
+- Bug yang ditemukan lewat tes dan diperbaiki: ringkasan otomatis menyambung blok tanpa spasi dan "membeku" setelah simpan pertama; zona waktu sesi MySQL dipaku ke UTC.
+- Teruji end-to-end (Playwright): redirect login dengan `next`, salah sandi, user biasa ditolak dari `/admin` dan API upload (401), buat/terbitkan artikel dengan editor + cover + gambar sisipan, tolak file non-gambar, artikel tampil di `/blog`, beranda, sitemap; draf dan terjadwal tidak terlihat publik (404) tapi bisa dipratinjau admin; cari; hapus dengan konfirmasi.
+- Disk lokal sempat penuh (C: tersisa 1 MB) saat Lighthouse menulis JSON; file scratch milik sesi dihapus, tidak ada file pengguna yang disentuh.
 
 ### Fase 3
 - DB: MySQL/MariaDB lewat Drizzle. Migrasi di `drizzle/`, dijalankan `npm run db:migrate` (hanya butuh dependensi runtime, jadi bisa dijalankan di server). Dev DB: MariaDB terpisah di port 3307 (lihat `.env.example`).

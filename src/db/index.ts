@@ -23,6 +23,11 @@ export function db(): Db {
     timezone: "Z",
     charset: "utf8mb4",
   });
+  // TIMESTAMP columns are returned in the session zone; pin every connection to UTC
+  // so Dates round-trip correctly whatever the server's own zone is.
+  g.__omnityPool.on("connection", (conn) => {
+    conn.query("SET time_zone = '+00:00'");
+  });
   g.__omnityDb = drizzle(g.__omnityPool, { schema, mode: "default" });
   return g.__omnityDb;
 }

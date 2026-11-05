@@ -1,9 +1,11 @@
+import { SiteShell } from "@/components/layout/site-shell";
 import { PageHero } from "@/components/page-hero";
 import { ButtonLink } from "@/components/ui/button";
 import { Em } from "@/components/ui/section";
 
 export default function NotFound() {
   return (
+    <SiteShell>
     <PageHero
       kicker="404"
       title={
@@ -23,5 +25,6 @@ export default function NotFound() {
         </>
       }
     />
+    </SiteShell>
   );
 }

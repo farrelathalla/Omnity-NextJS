@@ -7,6 +7,9 @@ import { ServicesSection } from "@/components/home/services-section";
 import { UseCasesSection } from "@/components/home/use-cases-section";
 import { WorksMarquee } from "@/components/home/works-marquee";
 
+// Static shell; the blog teaser refreshes every 5 minutes and whenever a post is saved.
+export const revalidate = 300;
+
 export default function HomePage() {
   return (
     <>
