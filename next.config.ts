@@ -18,6 +18,11 @@ const isStaging = process.env.SITE_ENV === "staging";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Shared hosting exposes dozens of cores but little memory: Next's default (one
+    // prerender worker per core, 55 on Hostinger) is killed with SIGABRT. Keep it small.
+    cpus: Number(process.env.BUILD_CPUS) || 2,
+  },
   images: {
     // WebP only: AVIF encoding on first request is slow and CPU-heavy on shared hosting.
     formats: ["image/webp"],
