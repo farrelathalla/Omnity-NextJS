@@ -28,3 +28,6 @@ dan harus diganti/dikonfirmasi sebelum situs diluncurkan.
 | 20 | Detail layanan (deliverable, proses, FAQ) | Ditulis dari brief | `src/content/service-details.ts` | Review proses dan deliverable |
 | 21 | Lokasi lain di situs lama | Situs lama mencantumkan "Workshop ONE" (World Capital Tower Lt. 17, Mega Kuningan) dan "Workshop Remote" (Bogor); belum ditampilkan | `src/lib/site.ts` | Konfirmasi apakah masih aktif dan perlu ditampilkan |
 | 22 | SMTP untuk email | Belum diisi; email dev ditulis ke `storage/outbox/` | `.env` (SMTP_*) | Kredensial SMTP (mis. mailbox Hostinger) untuk `corporate@omnity.co.id` |
+| 23 | Kredensial Google OAuth | Belum ada, tombol "Lanjutkan dengan Google" tersembunyi | `.env` (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) | OAuth client di Google Cloud Console dengan redirect URI `https://<domain>/api/auth/google/callback` (satu per domain: staging dan produksi) |
+| 24 | Pengirim email transaksional | `no-reply@omnity.co.id` (belum ada mailbox/SPF/DKIM) | `.env` (`MAIL_FROM`, `SMTP_*`) | Mailbox pengirim + SPF/DKIM agar email verifikasi tidak masuk spam |
+

@@ -96,14 +96,14 @@ Commit: `phase 4: blog and admin posting`
 
 ## Fase 5: Registrasi & login (Langkah 5)
 
-- [ ] Registrasi: nama lengkap, nama perusahaan ("Perorangan" boleh), ponsel +62, email, password >= 8, persetujuan Syarat & Privasi
-- [ ] Verifikasi email lewat link bertanda tangan + kedaluwarsa; kirim ulang; lupa/reset password
-- [ ] Google sign-in (`arctic`), muncul hanya bila env diisi; setelah login pertama wajib lengkapi perusahaan + ponsel (`/profil/lengkapi`)
-- [ ] **Modal** daftar/masuk yang bisa dipanggil dari mana saja; setelah sukses kembali ke aksi sebelumnya; prompt hero ikut terbawa
-- [ ] Navbar sadar-login: "Proyek Saya" + badge, avatar + menu (Profil, Proyek Saya, Keluar)
-- [ ] `/profil`: ubah data dan password; email/ponsel tidak pernah tampil publik
-- [ ] Keamanan: rate limit login, `token_version` untuk cabut sesi, cookie `httpOnly`/`sameSite`/`secure`, CSRF lewat server actions + cek Origin
-- [ ] Verifikasi: alur daftar -> verifikasi -> masuk -> keluar, reset password, akses admin ditolak untuk user biasa
+- [x] Registrasi: nama lengkap, nama perusahaan ("Perorangan" boleh), ponsel +62, email, password >= 8, persetujuan Syarat & Privasi
+- [x] Verifikasi email lewat link bertanda tangan + kedaluwarsa; kirim ulang; lupa/reset password
+- [x] Google sign-in (`arctic`), muncul hanya bila env diisi; setelah login pertama wajib lengkapi perusahaan + ponsel (`/profil/lengkapi`)
+- [x] **Modal** daftar/masuk yang bisa dipanggil dari mana saja; setelah sukses kembali ke aksi sebelumnya; prompt hero ikut terbawa
+- [x] Navbar sadar-login: "Proyek Saya" + badge, avatar + menu (Profil, Proyek Saya, Keluar)
+- [x] `/profil`: ubah data dan password; email/ponsel tidak pernah tampil publik
+- [x] Keamanan: rate limit login, `token_version` untuk cabut sesi, cookie `httpOnly`/`sameSite`/`secure`, CSRF lewat server actions + cek Origin
+- [x] Verifikasi: alur daftar -> verifikasi -> masuk -> keluar, reset password, akses admin ditolak untuk user biasa
 
 Commit: `phase 5: registration and login`
 
@@ -149,6 +149,15 @@ Commit: `docs: deployment and switching runbooks`
 ## Catatan fase
 
 (Diisi saat tiap fase selesai: keputusan, temuan, utang teknis.)
+
+### Fase 5
+- Alur: daftar -> email verifikasi (tautan 24 jam, sekali pakai, hanya hash SHA-256 di DB) -> klik tautan = terverifikasi **dan langsung masuk**, lalu kembali ke `next` (mis. `/mulai`). Login ditolak sebelum verifikasi, tetapi pesannya baru muncul setelah sandi benar (tidak membocorkan akun). Daftar dengan email yang sudah ada mendapat respons netral yang sama dan pemilik akun diberi tahu lewat email.
+- Reset password: tautan 1 jam sekali pakai (UPDATE atomik), `token_version` dinaikkan sehingga semua sesi lama (termasuk di browser lain) keluar. Ubah password di `/profil` mempertahankan sesi browser ini saja.
+- Modal (`<dialog>` bawaan: fokus terjebak, Esc, klik latar) bisa dibuka dari navbar dan dari hero prompt. Prompt hero disimpan di `sessionStorage` dan registrasi dari modal mengingat tujuan `/mulai`. Navbar sadar-login tanpa membuat halaman marketing dinamis: sesi diambil dari `/api/session` setelah hidrasi dan diperbarui tiap perpindahan rute.
+- Google sign-in (arctic, PKCE S256, state di cookie httpOnly): tombol hanya muncul bila `GOOGLE_CLIENT_ID/SECRET` diisi; akun Google baru wajib melengkapi perusahaan + ponsel di `/profil/lengkapi`; email Google yang sudah terverifikasi ditautkan ke akun email yang sama. **Belum diuji end-to-end** (butuh kredensial OAuth asli dari klien): yang teruji adalah bentuk URL otorisasi, cookie, penolakan state palsu, dan tombol on/off.
+- Bug serius yang ditemukan lewat tes dan diperbaiki: (1) di MariaDB dengan `explicit_defaults_for_timestamp=OFF`, kolom `TIMESTAMP` yang dimaksud nullable berubah jadi `NOT NULL DEFAULT current_timestamp() ON UPDATE ...` (akun baru langsung "terverifikasi", `published_at` ikut berubah tiap edit, `used_at` berisi 0000-00-00); semua momen nullable kini `DATETIME` (migrasi 0003, UTC). (2) file `"use server"` mengekspos setiap fungsi ekspor sebagai endpoint: `finishVerification(userId)` dipindah ke `src/lib/account.ts`. (3) `<form>` bersarang (kirim ulang verifikasi di dalam form login) ikut memicu login. (4) Cookie yang disetel di server action membuat Next me-render ulang halaman, sehingga reset password sukses malah menampilkan "tautan tidak berlaku": kini `redirect()` dari server. (5) Logout dari `/` me-redirect ke `/` yang sama, state klien basi: kini `signOut()` + refresh eksplisit.
+- Teruji end-to-end (50 asersi Playwright): validasi + nilai form tidak hilang, verifikasi, resend, link usang/bekas ditolak, duplikat netral, forgot/reset, sesi lain dicabut, profil + ubah sandi, modal (buka, tab, Esc), hero -> modal -> verifikasi -> `/mulai`, halaman terlindungi.
+- `/proyek` sementara berupa keadaan kosong yang jujur sampai Fase 6.
 
 ### Fase 4
 - Struktur: route group `(site)` (navbar + footer) dan `(admin)` (shell sendiri). `SiteShell` dipakai juga oleh `not-found.tsx` agar 404 tetap punya navigasi. Navbar belum sadar-login (Fase 5) supaya halaman marketing tetap statis dan cepat.

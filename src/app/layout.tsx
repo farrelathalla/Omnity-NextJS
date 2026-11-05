@@ -1,8 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Serif } from "next/font/google";
+import { Suspense } from "react";
+import { AuthProvider } from "@/components/auth/auth-provider";
+import { VerifiedToast } from "@/components/auth/verified-toast";
 import { JsonLd } from "@/components/json-ld";
 import { StagingBadge } from "@/components/layout/staging-badge";
 import { MotionProvider } from "@/components/motion/provider";
+import { googleEnabled } from "@/lib/google";
 import { isStaging, site, siteUrl } from "@/lib/site";
 import "./globals.css";
 
@@ -56,7 +60,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Lewati ke konten
         </a>
         <MotionProvider>
-          {children}
+          <AuthProvider googleEnabled={googleEnabled()}>
+            {children}
+            <Suspense fallback={null}>
+              <VerifiedToast />
+            </Suspense>
+          </AuthProvider>
         </MotionProvider>
         <StagingBadge />
         <JsonLd

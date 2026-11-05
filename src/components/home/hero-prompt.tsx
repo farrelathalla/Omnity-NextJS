@@ -3,6 +3,7 @@
 import { LayoutGroup, motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { useAuth } from "@/components/auth/auth-provider";
 import { Icon, type IconName } from "@/components/icon";
 import { templates } from "@/content/templates";
 import { cn } from "@/lib/utils";
@@ -98,6 +99,7 @@ function useTypingPlaceholder(phrases: string[], enabled: boolean) {
 
 export function HeroPrompt() {
   const router = useRouter();
+  const { user, status, openAuth } = useAuth();
   const reduce = useReducedMotion();
   const uid = useId();
   const [tab, setTab] = useState<TabId>("website");
@@ -142,6 +144,12 @@ export function HeroPrompt() {
       /* private mode: the prompt just is not carried over */
     }
     if (tab === "website") {
+      // Brief: a visitor may type the prompt, then is asked to sign up; the prompt (kept in
+      // sessionStorage above) is carried into the survey afterwards.
+      if (status === "ready" && !user) {
+        openAuth({ mode: "register", next: "/mulai" });
+        return;
+      }
       router.push("/mulai");
     } else {
       const q = new URLSearchParams({ topik: tab });

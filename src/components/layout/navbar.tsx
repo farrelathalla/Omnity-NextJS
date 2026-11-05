@@ -4,19 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth, type AuthUser } from "@/components/auth/auth-provider";
 import { OmnityLogo } from "@/components/brand/logo";
 import { Icon } from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
-import { ButtonLink, buttonVariants } from "@/components/ui/button";
+import { Button, ButtonLink, buttonVariants } from "@/components/ui/button";
 import { products } from "@/content/products";
 import { services } from "@/content/services";
 import { cn } from "@/lib/utils";
-
-export type NavUser = {
-  name: string;
-  /** unread mockups / quotes, shown as a badge on "Proyek Saya" */
-  badge?: number;
-} | null;
 
 type MenuKey = "produk" | "layanan";
 
@@ -29,8 +24,9 @@ const plainLinks = [
 const mainProducts = products.filter((p) => p.slug !== "solusi-ai");
 const aiProduct = products.find((p) => p.slug === "solusi-ai")!;
 
-export function Navbar({ user = null }: { user?: NavUser }) {
+export function Navbar() {
   const pathname = usePathname();
+  const { user, status, openAuth, signOut } = useAuth();
   const [menu, setMenu] = useState<MenuKey | null>(null);
   const [drawer, setDrawer] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -201,23 +197,25 @@ export function Navbar({ user = null }: { user?: NavUser }) {
             Mulai Proyek
           </ButtonLink>
           {user ? (
-            <Link
-              href="/profil"
-              aria-label={`Akun ${user.name}`}
-              className="inline-flex size-10 items-center justify-center rounded-full border border-line bg-surface text-sm font-semibold text-ink transition-colors hover:border-ink/30"
-            >
-              {user.name.trim().charAt(0).toUpperCase()}
-            </Link>
+            <AccountMenu user={user} />
           ) : (
-            <ButtonLink
-              href="/masuk"
-              variant="secondary"
-              shape="pill"
-              size="sm"
-              className="h-10 px-5"
+            <Link
+              href={`/masuk?next=${encodeURIComponent(pathname)}`}
+              onClick={(e) => {
+                e.preventDefault();
+                openAuth({ mode: "login", next: pathname });
+              }}
+              aria-hidden={status === "loading"}
+              tabIndex={status === "loading" ? -1 : undefined}
+              className={cn(
+                buttonVariants({ variant: "secondary", shape: "pill", size: "sm" }),
+                "h-10 px-5",
+                // keep the slot while the session loads, so signed-in users never see a flash of "Masuk"
+                status === "loading" && "invisible",
+              )}
             >
               Masuk
-            </ButtonLink>
+            </Link>
           )}
         </div>
 
@@ -232,7 +230,19 @@ export function Navbar({ user = null }: { user?: NavUser }) {
         </button>
       </div>
 
-      <MobileDrawer open={drawer} onClose={() => setDrawer(false)} user={user} />
+      <MobileDrawer
+        open={drawer}
+        onClose={() => setDrawer(false)}
+        user={user}
+        onSignOut={() => {
+          setDrawer(false);
+          void signOut();
+        }}
+        onLogin={() => {
+          setDrawer(false);
+          openAuth({ mode: "login", next: pathname });
+        }}
+      />
     </header>
   );
 }
@@ -347,10 +357,14 @@ function MobileDrawer({
   open,
   onClose,
   user,
+  onLogin,
+  onSignOut,
 }: {
   open: boolean;
   onClose: () => void;
-  user: NavUser;
+  user: AuthUser | null;
+  onLogin: () => void;
+  onSignOut: () => void;
 }) {
   const [section, setSection] = useState<MenuKey | null>(null);
 
@@ -442,13 +456,18 @@ function MobileDrawer({
               Mulai Proyek
             </ButtonLink>
             {user ? (
-              <ButtonLink href="/profil" onClick={onClose} variant="secondary" size="lg" className="w-full">
-                Akun saya
-              </ButtonLink>
+              <div className="grid grid-cols-2 gap-2.5">
+                <ButtonLink href="/profil" onClick={onClose} variant="secondary" size="lg">
+                  Akun saya
+                </ButtonLink>
+                <Button type="button" onClick={onSignOut} variant="secondary" size="lg">
+                  Keluar
+                </Button>
+              </div>
             ) : (
-              <ButtonLink href="/masuk" onClick={onClose} variant="secondary" size="lg" className="w-full">
-                Masuk
-              </ButtonLink>
+              <Button type="button" onClick={onLogin} variant="secondary" size="lg" className="w-full">
+                Masuk atau daftar
+              </Button>
             )}
           </div>
         </motion.div>
@@ -521,5 +540,84 @@ function DrawerLink({
     >
       {children}
     </Link>
+  );
+}
+
+/** Avatar with a small menu: profile, my projects, admin (if admin), sign out. */
+function AccountMenu({ user }: { user: AuthUser }) {
+  const { signOut } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const item =
+    "flex h-10 w-full items-center rounded-lg px-3 text-sm text-ink/85 transition-colors hover:bg-sand";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`Akun ${user.name}`}
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex size-10 items-center justify-center rounded-full border border-line bg-surface text-sm font-semibold text-ink transition-colors hover:border-ink/30"
+      >
+        {user.name.trim().charAt(0).toUpperCase()}
+      </button>
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            role="menu"
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-line bg-surface p-1.5 shadow-pop"
+          >
+            <p className="truncate px-3 pb-1.5 pt-2 text-xs font-semibold uppercase tracking-wider text-muted">
+              {user.name}
+            </p>
+            <Link role="menuitem" href="/profil" onClick={() => setOpen(false)} className={item}>
+              Profil
+            </Link>
+            <Link role="menuitem" href="/proyek" onClick={() => setOpen(false)} className={item}>
+              Proyek Saya
+            </Link>
+            {user.role === "admin" ? (
+              <Link role="menuitem" href="/admin" onClick={() => setOpen(false)} className={item}>
+                Admin
+              </Link>
+            ) : null}
+            <div className="mt-1 border-t border-line pt-1">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false);
+                  void signOut();
+                }}
+                className={cn(item, "text-red-600")}
+              >
+                Keluar
+              </button>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
   );
 }

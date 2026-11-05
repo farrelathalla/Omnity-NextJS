@@ -46,6 +46,13 @@ berawalan `/`, dan beri path output gaya Windows (`C:/...`).
 3. `npm run db:migrate` lalu `npm run db:seed`.
 4. Masuk di `/masuk`. Admin ada di `/admin`: tulis, jadwalkan, dan hapus artikel blog (editor Tiptap, foto sampul 16:9 otomatis).
 
+### Akun pengguna
+
+Registrasi (`/daftar` atau modal), verifikasi email, login, lupa/reset sandi, dan `/profil` sudah aktif.
+Email dikirim lewat SMTP (`SMTP_*`); tanpa SMTP, tautan verifikasi/reset ditulis ke `storage/outbox/`
+(buka file JSON terbaru untuk tautannya). **Google sign-in** aktif bila `GOOGLE_CLIENT_ID` dan
+`GOOGLE_CLIENT_SECRET` diisi; daftarkan redirect URI `<SITE_URL>/api/auth/google/callback` di Google Cloud Console.
+
 Upload disimpan di `UPLOAD_DIR` (default `./storage/uploads`, diabaikan git) dan disajikan lewat
 `/uploads/...`. **Di produksi arahkan ke folder di luar aplikasi** agar deploy tidak menghapusnya.
 Tanpa `SMTP_HOST`, email ditulis ke `storage/outbox/` (cocok untuk dev).

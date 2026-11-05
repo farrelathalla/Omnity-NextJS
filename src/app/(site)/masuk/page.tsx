@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { LoginForm } from "@/components/forms/login-form";
-import { Backdrop } from "@/components/layout/backdrop";
-import { Container, Em } from "@/components/ui/section";
+import { AuthPage } from "@/components/auth/auth-page";
+import { LoginForm } from "@/components/forms/auth-forms";
+import { Em } from "@/components/ui/section";
 import { getCurrentUser, safeNext } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -12,25 +12,37 @@ export const metadata: Metadata = {
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
+const notices: Record<string, string> = {
+  "verifikasi:gagal": "Tautan verifikasi sudah kedaluwarsa atau pernah dipakai. Masuk lalu kirim ulang tautan verifikasi.",
+  "google:gagal": "Masuk dengan Google gagal. Coba lagi atau pakai email.",
+  "google:email": "Akun Google Anda belum memiliki email yang terverifikasi.",
+  "google:nonaktif": "Masuk dengan Google belum diaktifkan.",
+};
+
 export default async function LoginPage({ searchParams }: PageProps<"/masuk">) {
-  const next = safeNext(first((await searchParams).next)) ?? undefined;
+  const sp = await searchParams;
+  const next = safeNext(first(sp.next)) ?? undefined;
   const user = await getCurrentUser();
   if (user) redirect(next ?? (user.role === "admin" ? "/admin" : "/"));
 
+  const notice =
+    notices[`verifikasi:${first(sp.verifikasi)}`] ?? notices[`google:${first(sp.google)}`] ?? null;
+
   return (
-    <section className="relative isolate overflow-hidden pb-24 pt-14 sm:pt-20">
-      <Backdrop />
-      <Container>
-        <div className="mx-auto max-w-md">
-          <h1 className="animate-hero-enter text-center font-serif text-5xl leading-none tracking-tight sm:text-6xl">
-            Selamat <Em tone="ink">datang.</Em>
-          </h1>
-          <p className="mt-4 text-center text-muted">Masuk untuk melanjutkan.</p>
-          <div className="mt-8 rounded-card border border-line bg-surface p-6 shadow-prompt sm:p-8">
-            <LoginForm next={next} />
-          </div>
-        </div>
-      </Container>
-    </section>
+    <AuthPage
+      title={
+        <>
+          Selamat <Em tone="ink">datang.</Em>
+        </>
+      }
+      lead="Masuk untuk melanjutkan."
+    >
+      {notice ? (
+        <p role="alert" className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {notice}
+        </p>
+      ) : null}
+      <LoginForm next={next} />
+    </AuthPage>
   );
 }

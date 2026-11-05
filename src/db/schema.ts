@@ -1,5 +1,6 @@
 import {
   bigint,
+  datetime,
   index,
   int,
   longtext,
@@ -38,6 +39,13 @@ export const rateLimits = mysqlTable("rate_limits", {
   windowStart: bigint("window_start", { mode: "number" }).notNull(),
 });
 
+/**
+ * NOTE on dates: nullable moments use DATETIME, not TIMESTAMP. On MariaDB with
+ * explicit_defaults_for_timestamp=OFF (the default up to 10.x) a TIMESTAMP that is not
+ * declared NULL silently becomes NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP.
+ * All values are UTC (the connection pins time_zone to +00:00).
+ */
+
 /** Accounts. Admins write the blog and manage projects; users own their projects. */
 export const users = mysqlTable(
   "users",
@@ -51,13 +59,28 @@ export const users = mysqlTable(
     company: varchar("company", { length: 160 }),
     phone: varchar("phone", { length: 32 }),
     googleId: varchar("google_id", { length: 64 }),
-    emailVerifiedAt: timestamp("email_verified_at"),
+    emailVerifiedAt: datetime("email_verified_at", { mode: "date" }),
     /** bump to invalidate every existing session of this user */
     tokenVersion: int("token_version").notNull().default(0),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
   (t) => [uniqueIndex("users_email_uq").on(t.email), index("users_google_idx").on(t.googleId)],
+);
+
+/** One-time links sent by email: address verification and password reset. Only a SHA-256 hash is stored. */
+export const emailTokens = mysqlTable(
+  "email_tokens",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("user_id").notNull(),
+    type: varchar("type", { length: 12 }).notNull(), // "verify" | "reset"
+    tokenHash: varchar("token_hash", { length: 64 }).notNull(),
+    expiresAt: datetime("expires_at", { mode: "date" }).notNull(),
+    usedAt: datetime("used_at", { mode: "date" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("email_tokens_hash_uq").on(t.tokenHash), index("email_tokens_user_idx").on(t.userId, t.type)],
 );
 
 /** Blog posts. No categories (client request). Scheduled = published with a future publishedAt. */
@@ -72,7 +95,7 @@ export const posts = mysqlTable(
     content: longtext("content").notNull(),
     coverPath: varchar("cover_path", { length: 255 }),
     status: varchar("status", { length: 12 }).notNull().default("draft"), // "draft" | "published"
-    publishedAt: timestamp("published_at"),
+    publishedAt: datetime("published_at", { mode: "date" }),
     readingMinutes: int("reading_minutes").notNull().default(1),
     authorId: int("author_id").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
