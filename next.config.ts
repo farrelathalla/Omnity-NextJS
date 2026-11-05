@@ -18,14 +18,6 @@ const isStaging = process.env.SITE_ENV === "staging";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
   images: {
     // WebP only: AVIF encoding on first request is slow and CPU-heavy on shared hosting.
     formats: ["image/webp"],
