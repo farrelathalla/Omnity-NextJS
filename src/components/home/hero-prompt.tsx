@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Icon, type IconName } from "@/components/icon";
 import { templates } from "@/content/templates";
+import { writeStart } from "@/lib/start-storage";
 import { cn } from "@/lib/utils";
 
 type TabId = "website" | "mobile" | "solusi";
@@ -53,8 +54,6 @@ const tabs: {
     ],
   },
 ];
-
-export const HERO_PROMPT_KEY = "omnity:hero-prompt";
 
 function useTypingPlaceholder(phrases: string[], enabled: boolean) {
   const [text, setText] = useState(phrases[0]);
@@ -138,19 +137,15 @@ export function HeroPrompt() {
 
   function submit() {
     const prompt = value.trim();
-    try {
-      sessionStorage.setItem(HERO_PROMPT_KEY, JSON.stringify({ prompt, tab, template }));
-    } catch {
-      /* private mode: the prompt just is not carried over */
-    }
+    writeStart({ prompt, tab, template });
     if (tab === "website") {
       // Brief: a visitor may type the prompt, then is asked to sign up; the prompt (kept in
-      // sessionStorage above) is carried into the survey afterwards.
+      // localStorage above) is carried into the survey afterwards.
       if (status === "ready" && !user) {
-        openAuth({ mode: "register", next: "/mulai" });
+        openAuth({ mode: "register", next: "/mulai/baru" });
         return;
       }
-      router.push("/mulai");
+      router.push("/mulai/baru");
     } else {
       const q = new URLSearchParams({ topik: tab });
       if (prompt) q.set("pesan", prompt.slice(0, 400));

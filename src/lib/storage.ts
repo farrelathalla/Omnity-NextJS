@@ -1,6 +1,6 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { db } from "@/db";
@@ -26,6 +26,10 @@ export async function saveImage(opts: {
   kind: string;
   ownerId: number;
   crop169?: boolean;
+  /** private files live under UPLOAD_DIR/private and are never served by /uploads/* */
+  visibility?: "public" | "private";
+  projectId?: string;
+  originalName?: string;
 }) {
   if (opts.buffer.length > MAX_UPLOAD_BYTES) {
     throw new UploadError("Ukuran file maksimal 8 MB.");
@@ -50,7 +54,8 @@ export async function saveImage(opts: {
   const out = await pipeline.webp({ quality: 82 }).toBuffer();
 
   const now = new Date();
-  const rel = `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${randomBytes(9).toString("hex")}.webp`;
+  const isPrivate = opts.visibility === "private";
+  const rel = `${isPrivate ? "private/" : ""}${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${randomBytes(9).toString("hex")}.webp`;
   const abs = path.join(uploadRoot(), rel);
   await mkdir(path.dirname(abs), { recursive: true });
   await writeFile(abs, out);
@@ -63,8 +68,11 @@ export async function saveImage(opts: {
     mime: "image/webp",
     size: out.length,
     ownerId: opts.ownerId,
+    visibility: isPrivate ? "private" : "public",
+    projectId: opts.projectId ?? null,
+    originalName: opts.originalName?.slice(0, 160) ?? null,
   });
-  return { id, path: rel, url: `/uploads/${rel}` };
+  return { id, path: rel, url: isPrivate ? `/api/files/${id}` : `/uploads/${rel}` };
 }
 
 /** Reads a stored file, refusing anything outside the upload root. */
@@ -77,4 +85,12 @@ export async function readStored(rel: string) {
   } catch {
     return null;
   }
+}
+
+/** Deletes a stored file from disk (best effort; the DB row is removed by the caller). */
+export async function removeStored(rel: string) {
+  const root = uploadRoot();
+  const abs = path.resolve(root, rel);
+  if (!abs.startsWith(root + path.sep)) return;
+  await unlink(abs).catch(() => {});
 }

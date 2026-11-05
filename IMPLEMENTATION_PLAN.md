@@ -109,14 +109,14 @@ Commit: `phase 5: registration and login`
 
 ## Fase 6: Design Anything (Langkah 6)
 
-- [ ] `/mulai`: pilih template (grid per industri + filter, opsi "tidak pakai template")
-- [ ] Wizard survei 8 langkah (`/mulai/survei`): Bisnis, Tujuan, Domain & hosting, Template & referensi, Halaman/menu (rekomendasi per industri, pilih/tambah/hapus), Brand & aset (warna, upload logo), Fitur tambahan, Ringkasan
-- [ ] Progress bar, satu topik per langkah, **autosave draft** (server) dan pemulihan saat kembali
-- [ ] Prefill dari prompt hero dan profil (perusahaan, ponsel); upload logo dan screenshot referensi
-- [ ] Kirim -> proyek berstatus `requested`, catatan di `project_events`, email konfirmasi + estimasi waktu (2-3 hari kerja)
-- [ ] `/proyek`: daftar proyek dengan badge status; `/proyek/[id]`: timeline status, jawaban survei, file; tab Mockup dan Penawaran (kosong sampai Fase 7)
-- [ ] Hak akses: pengguna hanya melihat proyeknya sendiri (dites)
-- [ ] Verifikasi: isi survei penuh lalu lanjutkan dari draft, screenshot tiap langkah di 375/1440
+- [x] `/mulai`: pilih template (grid per industri + filter, opsi "tidak pakai template")
+- [x] Wizard survei 8 langkah (`/mulai/survei`): Bisnis, Tujuan, Domain & hosting, Template & referensi, Halaman/menu (rekomendasi per industri, pilih/tambah/hapus), Brand & aset (warna, upload logo), Fitur tambahan, Ringkasan
+- [x] Progress bar, satu topik per langkah, **autosave draft** (server) dan pemulihan saat kembali
+- [x] Prefill dari prompt hero dan profil (perusahaan, ponsel); upload logo dan screenshot referensi
+- [x] Kirim -> proyek berstatus `requested`, catatan di `project_events`, email konfirmasi + estimasi waktu (2-3 hari kerja)
+- [x] `/proyek`: daftar proyek dengan badge status; `/proyek/[id]`: timeline status, jawaban survei, file; tab Mockup dan Penawaran (kosong sampai Fase 7)
+- [x] Hak akses: pengguna hanya melihat proyeknya sendiri (dites)
+- [x] Verifikasi: isi survei penuh lalu lanjutkan dari draft, screenshot tiap langkah di 375/1440
 
 Commit: `phase 6: design anything survey and user dashboard`
 
@@ -149,6 +149,17 @@ Commit: `docs: deployment and switching runbooks`
 ## Catatan fase
 
 (Diisi saat tiap fase selesai: keputusan, temuan, utang teknis.)
+
+### Fase 6
+- Alur: `/mulai` (pilih template + prompt) atau hero -> daftar/masuk bila perlu -> `/mulai/baru` membuat draf dari prompt + template (idempoten: draf kosong 10 menit terakhir dipakai ulang) -> wizard 8 langkah di `/mulai/survei/[id]` -> kirim -> `/proyek/[id]`. Prompt dan template disimpan di `localStorage` 24 jam (bukan sessionStorage): link verifikasi email biasanya terbuka di tab baru, dan teruji bahwa pilihan tetap terbawa.
+- Autosave (debounce 900 ms) menyimpan seluruh survei + langkah terakhir; reload melanjutkan di langkah yang sama dengan semua isian. Survei divalidasi zod di server (batas panjang tiap field), id file dicek milik proyek itu sendiri, dan pengiriman memakai compare-and-set agar klik ganda tidak mengirim dua kali.
+- Rekomendasi halaman per industri otomatis terisi (tabel brief bab 08) dan berhenti menimpa begitu pengguna mengubah daftar; menu bisa dipilih, dicentang-lepas, atau ditambah.
+- File lampiran (logo, screenshot referensi) bersifat **privat**: disimpan di `UPLOAD_DIR/private`, disajikan hanya oleh `/api/files/[id]` untuk pemilik dan admin (selain itu 404, anonim 401), dan rute publik `/uploads` menolak `private/*`. Gambar divalidasi dengan decode, di-encode ulang ke WebP.
+- Isolasi data (pengganti Row Level Security): setiap pembacaan proyek lewat `getOwnedProject(id, userId)`; ID proyek acak 16 hex. Teruji: pengguna lain mendapat 404 untuk proyek, draf, file, unggahan, dan hapus milik orang lain.
+- Template: pratinjau berupa sketsa kerangka layout (bukan desain jadi) dengan jujur; thumbnail asli menyusul bila tim desain menyiapkannya.
+- Status: `src/lib/project-status.ts` memuat jalur, label, nada badge, dan tabel transisi yang dipakai Fase 7. Riwayat tercatat di `project_events`. Tab Mockup dan Penawaran masih keadaan kosong (diisi Fase 7).
+- Teruji end-to-end (Playwright, 40+ asersi) termasuk 375 px tanpa overflow horizontal.
+- Temuan tes yang berupa masalah tes (bukan aplikasi): teks badge di-uppercase CSS memengaruhi `innerText`, selektor `has-text` cocok dengan substring ("Fitur tambahan" vs "Tambah"), dan tab baru perlu penangan dialog sendiri.
 
 ### Fase 5
 - Alur: daftar -> email verifikasi (tautan 24 jam, sekali pakai, hanya hash SHA-256 di DB) -> klik tautan = terverifikasi **dan langsung masuk**, lalu kembali ke `next` (mis. `/mulai`). Login ditolak sebelum verifikasi, tetapi pesannya baru muncul setelah sandi benar (tidak membocorkan akun). Daftar dengan email yang sudah ada mendapat respons netral yang sama dan pemilik akun diberi tahu lewat email.

@@ -1,29 +1,39 @@
 import type { Metadata } from "next";
-import { ButtonLink } from "@/components/ui/button";
-import { ComingSoon, Em } from "@/components/coming-soon";
+import { PageHero } from "@/components/page-hero";
+import { TemplatePicker } from "@/components/projects/template-picker";
+import { Container, Em } from "@/components/ui/section";
+import { templates } from "@/content/templates";
 
 export const metadata: Metadata = {
   title: "Design Anything",
-  description: "Isi survei singkat, terima mockup website dari tim Omnity, lalu putuskan.",
+  description:
+    "Isi survei singkat, terima mockup website dari tim Omnity, lalu putuskan. Pilih template sebagai titik awal atau mulai dari nol.",
   alternates: { canonical: "/mulai" },
 };
 
-// Replaced by the template picker and survey wizard in phase 6.
-export default function StartPage() {
+const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+export default async function StartPage({ searchParams }: PageProps<"/mulai">) {
+  const t = first((await searchParams).template);
+  const initialTemplate = templates.some((x) => x.id === t) ? t : undefined;
+
   return (
-    <ComingSoon
-      kicker="Design Anything"
-      title={
-        <>
-          Mockup website, <Em tone="ink">sebelum Anda bayar.</Em>
-        </>
-      }
-      lead="Survei singkat dan pembuatan mockup sedang kami siapkan. Sementara itu, ceritakan kebutuhan website Anda dan tim kami akan menghubungi."
-      actions={
-        <ButtonLink href="/kontak?topik=pembuatan-website" shape="pill">
-          Ceritakan kebutuhan website
-        </ButtonLink>
-      }
-    />
+    <>
+      <PageHero
+        kicker="Design Anything"
+        crumbs={[{ label: "Mulai Proyek", href: "/mulai" }]}
+        title={
+          <>
+            Lihat mockup-nya <Em tone="ink">sebelum bayar.</Em>
+          </>
+        }
+        lead="Pilih template sebagai titik awal (atau mulai dari nol), isi survei singkat 8 langkah, dan tim kami menyiapkan mockup website Anda. Setelah itu Anda menerima penawaran dan memutuskan."
+      />
+      <section className="pb-24">
+        <Container>
+          <TemplatePicker initialTemplate={initialTemplate} />
+        </Container>
+      </section>
+    </>
   );
 }

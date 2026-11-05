@@ -12,7 +12,10 @@ export async function GET(_req: Request, ctx: RouteContext<"/uploads/[...path]">
   const { path } = await ctx.params;
   const rel = path.join("/");
   const ext = rel.split(".").pop()?.toLowerCase() ?? "";
-  if (!TYPES[ext] || rel.includes("..")) return new Response("Not found", { status: 404 });
+  // private/* belongs to /api/files (owner or admin only); never serve it from here.
+  if (!TYPES[ext] || rel.includes("..") || rel.startsWith("private/")) {
+    return new Response("Not found", { status: 404 });
+  }
 
   const file = await readStored(rel);
   if (!file) return new Response("Not found", { status: 404 });

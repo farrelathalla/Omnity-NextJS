@@ -118,11 +118,58 @@ export const uploads = mysqlTable(
     mime: varchar("mime", { length: 60 }).notNull(),
     size: int("size").notNull(),
     ownerId: int("owner_id"),
+    /** "public" files are served from /uploads/*; "private" ones only to the owner and admins */
+    visibility: varchar("visibility", { length: 8 }).notNull().default("public"),
+    projectId: varchar("project_id", { length: 16 }),
+    originalName: varchar("original_name", { length: 160 }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (t) => [uniqueIndex("uploads_path_uq").on(t.path)],
+  (t) => [uniqueIndex("uploads_path_uq").on(t.path), index("uploads_project_idx").on(t.projectId)],
 );
 
+/** A Design Anything request: survey answers + where it is in the pipeline (see src/lib/project-status.ts). */
+export const projects = mysqlTable(
+  "projects",
+  {
+    /** random public id (never an auto-increment number, so URLs cannot be enumerated) */
+    id: varchar("id", { length: 16 }).primaryKey(),
+    userId: int("user_id").notNull(),
+    type: varchar("type", { length: 16 }).notNull().default("website"),
+    status: varchar("status", { length: 24 }).notNull().default("draft"),
+    /** business name, copied out of the survey for lists */
+    title: varchar("title", { length: 160 }).notNull().default(""),
+    /** the sentence typed into the hero prompt box */
+    prompt: text("prompt"),
+    templateId: varchar("template_id", { length: 40 }),
+    /** answers of the 8-step survey (JSON, validated by src/lib/survey.ts) */
+    survey: longtext("survey").notNull(),
+    surveyStep: int("survey_step").notNull().default(1),
+    /** internal notes, admin only (phase 7) */
+    adminNote: text("admin_note"),
+    submittedAt: datetime("submitted_at", { mode: "date" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (t) => [index("projects_user_idx").on(t.userId, t.updatedAt), index("projects_status_idx").on(t.status)],
+);
+
+/** Append-only history of status changes and notes for a project. */
+export const projectEvents = mysqlTable(
+  "project_events",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    projectId: varchar("project_id", { length: 16 }).notNull(),
+    fromStatus: varchar("from_status", { length: 24 }),
+    toStatus: varchar("to_status", { length: 24 }).notNull(),
+    note: text("note"),
+    byUserId: int("by_user_id"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("project_events_project_idx").on(t.projectId, t.createdAt)],
+);
+
+export type Project = typeof projects.$inferSelect;
+export type ProjectEvent = typeof projectEvents.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type Inquiry = typeof inquiries.$inferSelect;
