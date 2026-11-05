@@ -36,7 +36,7 @@ export function Marquee({
         style={{ "--marquee-duration": `${duration}s` } as CSSProperties}
       >
         <div className={cn("flex shrink-0 pr-4", gap)}>{children}</div>
-        <div className={cn("flex shrink-0 pr-4", gap)} aria-hidden="true">
+        <div className={cn("flex shrink-0 pr-4", gap)} aria-hidden="true" inert>
           {children}
         </div>
       </div>

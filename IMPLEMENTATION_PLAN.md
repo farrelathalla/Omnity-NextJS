@@ -51,18 +51,18 @@ Commit: `phase 1: foundation and design system`
 
 ## Fase 2: Homepage H1-H8 (Langkah 2)
 
-- [ ] Konten tipe-aman di `src/content/`: `products.ts`, `services.ts`, `works.ts`, `use-cases.ts`, `templates.ts`
-- [ ] Screenshot portofolio ke `public/work/*.webp` (script `tools/capture-work.mjs` ikut di repo)
-- [ ] **H1 Hero:** judul serif "Bangun *apa pun.*", sub, tab Website / Mobile App / Solusi IT, `PromptBox` (placeholder mengetik, "Pilih template", "Mulai Desain"), bukti sosial; prompt disimpan di `sessionStorage` untuk dibawa ke survei
-- [ ] **H2 Marquee karya:** dua baris berlawanan arah dari screenshot, pause saat hover, klik ke `/karya`
-- [ ] **H3 Produk:** grid kartu (OmniPay besar + strip logo pembayaran, Omnidoc, OmniCard, OmniAssetTracker, OmniWHERE, OmniPOS, OmniTRANS, Solusi AI)
-- [ ] **H4 Layanan:** kartu bento dengan ikon garis, CTA "Jadwalkan konsultasi"
-- [ ] **H5 Cara kerja:** 4 langkah bernomor serif
-- [ ] **H6 Use case & studi kasus AI:** kartu masalah -> solusi -> hasil (isi sementara ditandai di `CONTENT_TODO.md`)
-- [ ] **H7 Blog terbaru + Forum:** 3 artikel + 3 pertanyaan forum (data statis dulu, tersambung ke DB di Fase 4)
-- [ ] **H8 CTA penutup** + footer
-- [ ] Animasi masuk per section (`Reveal`), hover kartu, tab aktif bergeser halus
-- [ ] Verifikasi: screenshot 375/1440, cek "reveals tersembunyi = 0", cek prefers-reduced-motion, Lighthouse lokal
+- [x] Konten tipe-aman di `src/content/`: `products.ts`, `services.ts`, `works.ts`, `use-cases.ts`, `templates.ts`
+- [x] Screenshot portofolio ke `public/work/*.webp` (script `tools/capture-work.mjs` ikut di repo)
+- [x] **H1 Hero:** judul serif "Bangun *apa pun.*", sub, tab Website / Mobile App / Solusi IT, `PromptBox` (placeholder mengetik, "Pilih template", "Mulai Desain"), bukti sosial; prompt disimpan di `sessionStorage` untuk dibawa ke survei
+- [x] **H2 Marquee karya:** dua baris berlawanan arah dari screenshot, pause saat hover, klik ke `/karya`
+- [x] **H3 Produk:** grid kartu (OmniPay besar + strip logo pembayaran, Omnidoc, OmniCard, OmniAssetTracker, OmniWHERE, OmniPOS, OmniTRANS, Solusi AI)
+- [x] **H4 Layanan:** kartu bento dengan ikon garis, CTA "Jadwalkan konsultasi"
+- [x] **H5 Cara kerja:** 4 langkah bernomor serif
+- [x] **H6 Use case & studi kasus AI:** kartu masalah -> solusi -> hasil (isi sementara ditandai di `CONTENT_TODO.md`)
+- [x] **H7 Blog terbaru + Forum:** 3 artikel + 3 pertanyaan forum (data statis dulu, tersambung ke DB di Fase 4)
+- [x] **H8 CTA penutup** + footer
+- [x] Animasi masuk per section (`Reveal`), hover kartu, tab aktif bergeser halus
+- [x] Verifikasi: screenshot 375/1440, cek "reveals tersembunyi = 0", cek prefers-reduced-motion, Lighthouse lokal
 
 Commit: `phase 2: homepage sections H1-H8`
 
@@ -149,6 +149,14 @@ Commit: `docs: deployment and switching runbooks`
 ## Catatan fase
 
 (Diisi saat tiap fase selesai: keputusan, temuan, utang teknis.)
+
+### Fase 2
+- Hasil Lighthouse lokal (build produksi): mobile Perf 100 / A11y 100 / SEO 100 / Best-practices 96 (turun dari 100 hanya karena 404 prefetch menuju halaman Fase 3); desktop Perf 100 / A11y 97 / SEO 100.
+- Masalah yang ditemukan dan diperbaiki: (1) `next/image` Next 16 menolak `quality` yang tidak terdaftar (HTTP 400), jadi `images.qualities` diset; (2) `blur-2xl` pada glow besar membuat render mobile berat, LCP 3,8-4,3 dtk, dihapus (radial-gradient sudah halus) dan LCP jadi 1,0 dtk; (3) duplikat marquee berisi link fokusable di dalam `aria-hidden`, kini `inert`; (4) kontras teks footer/placeholder; (5) wordmark footer dipindah ke pseudo-element agar bukan teks DOM; (6) label tab hero membungkus di 375 px.
+- Marquee: dua baris 130 dtk dan 140 dtk, arah berlawanan, 25 tile (desktop + mobile), pause saat hover, `prefers-reduced-motion` menghentikannya.
+- Prompt hero disimpan di `sessionStorage` (`omnity:hero-prompt`) dan dibaca di Fase 6. Tab Mobile App / Solusi IT mengarah ke `/kontak?topik=...&pesan=...` (dibuat di Fase 3).
+- Karya = tiga situs nyata; konten kasus AI sengaja diberi label "Contoh skenario" dan tanpa angka. Lihat `docs/CONTENT_TODO.md`.
+- Link ke halaman Fase 3 masih 404 di tahap ini (diperiksa crawler di Fase 3).
 
 ### Fase 1
 - Next 16.4 memakai `proxy.ts` (bukan middleware) dan mengaktifkan Cache Components di scaffold; dimatikan sesuai PLAN.md. Typed `LayoutProps` butuh `next typegen` (sudah masuk script `typecheck`).

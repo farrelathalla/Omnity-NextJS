@@ -26,7 +26,7 @@ function Column({
 }) {
   return (
     <div>
-      <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+      <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
         {title}
       </h2>
       <ul className="mt-5 space-y-2.5">
@@ -110,7 +110,7 @@ export function Footer({ className }: { className?: string }) {
           </div>
         </div>
 
-        <div className="relative z-10 mt-16 flex flex-col gap-2 border-t border-white/10 pt-6 text-[0.8rem] leading-relaxed text-white/45 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative z-10 mt-16 flex flex-col gap-2 border-t border-white/10 pt-6 text-[0.8rem] leading-relaxed text-white/60 lg:flex-row lg:items-center lg:justify-between">
           <p>
             © {new Date().getFullYear()} {site.legalName}. Hak cipta dilindungi.
           </p>
@@ -127,9 +127,10 @@ export function Footer({ className }: { className?: string }) {
         aria-hidden="true"
         className="pointer-events-none relative -mt-6 h-[7.5rem] select-none overflow-hidden sm:h-[10rem] lg:h-[13rem]"
       >
-        <span className="absolute inset-x-0 top-0 block whitespace-nowrap text-center text-[26vw] font-bold uppercase leading-[0.8] tracking-tight text-white/[0.045] min-[1280px]:text-[19rem]">
-          Omnity
-        </span>
+        <span
+          data-text="Omnity"
+          className="absolute inset-x-0 top-0 block whitespace-nowrap text-center text-[26vw] font-bold uppercase leading-[0.8] tracking-tight text-transparent after:text-white/[0.045] after:content-[attr(data-text)] min-[1280px]:text-[19rem]"
+        />
       </div>
     </footer>
   );

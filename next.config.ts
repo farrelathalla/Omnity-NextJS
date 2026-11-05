@@ -28,6 +28,8 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    // Next 16 only serves qualities listed here (anything else is HTTP 400).
+    qualities: [60, 75, 85],
   },
   async headers() {
     return [
