@@ -29,23 +29,23 @@ Commit: `docs: add PLAN.md and IMPLEMENTATION_PLAN.md`
 
 ## Fase 1: Fondasi & design system (Langkah 1)
 
-- [ ] Dependensi: `motion`, `lucide-react`, `clsx`, `tailwind-merge`, `class-variance-authority`
-- [ ] `next.config.ts`: matikan `cacheComponents`; header keamanan; flag `SITE_ENV`
-- [ ] Token desain di `globals.css` (`@theme`): warna, radius, shadow, font, keyframes (hero-enter, marquee-left/right, caret)
-- [ ] Font: Instrument Serif (regular + italic) dan Inter via `next/font`
-- [ ] Logo: `OmnityMark` + `OmnityLogo` (SVG), wordmark OMNITY
-- [ ] Util: `cn()`, `site` config (nama, alamat, email, sosial), `SITE_ENV`
-- [ ] Komponen UI: Button (primer/sekunder/ghost/pill), Card, Badge, Input, Textarea, Select, Kicker, SectionHeader (kicker + judul serif + kata miring), Container
-- [ ] Gerak: `Reveal` (motion, hormati reduced motion), `Marquee` (CSS, 2 arah, pause hover)
-- [ ] `AnnouncementBar` (opsional, bisa ditutup)
-- [ ] `Navbar`: logo | Produk v (mega menu 2 kolom + Solusi AI) | Layanan v | Karya | Blog | Forum || Proyek Saya (nanti, setelah login) | Mulai Proyek | Masuk; mobile: drawer layar penuh dengan CTA di bawah
-- [ ] `Footer` gelap: kolom Brand/Produk/Layanan/Perusahaan, tombol putih "Mulai Proyek", ikon sosial, badge PCI DSS, wordmark OMNITY raksasa terpotong, efek sticky reveal
-- [ ] Latar `DotGrid` + glow radial
-- [ ] Halaman `/styleguide` menampilkan semua komponen (noindex)
-- [ ] Skip link, fokus terlihat, `lang="id"`, metadata dasar
-- [ ] `.env.example`, `.gitignore` (izinkan `.env.example`), README proyek
-- [ ] `tools/shot.mjs`: screenshot responsif (Playwright + Chrome lokal)
-- [ ] Verifikasi: lint, tsc, build, screenshot `/styleguide` di 375 dan 1440 px, tes drawer mobile + mega menu
+- [x] Dependensi: `motion`, `lucide-react`, `clsx`, `tailwind-merge`, `class-variance-authority`
+- [x] `next.config.ts`: matikan `cacheComponents`; header keamanan; flag `SITE_ENV`
+- [x] Token desain di `globals.css` (`@theme`): warna, radius, shadow, font, keyframes (hero-enter, marquee-left/right, caret)
+- [x] Font: Instrument Serif (regular + italic) dan Inter via `next/font`
+- [x] Logo: `OmnityMark` + `OmnityLogo` (SVG), wordmark OMNITY
+- [x] Util: `cn()`, `site` config (nama, alamat, email, sosial), `SITE_ENV`
+- [x] Komponen UI: Button (primer/sekunder/ghost/pill), Card, Badge, Input, Textarea, Select, Kicker, SectionHeader (kicker + judul serif + kata miring), Container
+- [x] Gerak: `Reveal` (motion, hormati reduced motion), `Marquee` (CSS, 2 arah, pause hover)
+- [x] `AnnouncementBar` (opsional, bisa ditutup)
+- [x] `Navbar`: logo | Produk v (mega menu 2 kolom + Solusi AI) | Layanan v | Karya | Blog | Forum || Proyek Saya (nanti, setelah login) | Mulai Proyek | Masuk; mobile: drawer layar penuh dengan CTA di bawah
+- [x] `Footer` gelap: kolom Brand/Produk/Layanan/Perusahaan, tombol putih "Mulai Proyek", ikon sosial, badge PCI DSS, wordmark OMNITY raksasa terpotong, efek sticky reveal
+- [x] Latar `DotGrid` + glow radial
+- [x] Halaman `/styleguide` menampilkan semua komponen (noindex)
+- [x] Skip link, fokus terlihat, `lang="id"`, metadata dasar
+- [x] `.env.example`, `.gitignore` (izinkan `.env.example`), README proyek
+- [x] `tools/shot.mjs`: screenshot responsif (Playwright + Chrome lokal)
+- [x] Verifikasi: lint, tsc, build, screenshot `/styleguide` di 375 dan 1440 px, tes drawer mobile + mega menu
 
 Commit: `phase 1: foundation and design system`
 
@@ -149,3 +149,11 @@ Commit: `docs: deployment and switching runbooks`
 ## Catatan fase
 
 (Diisi saat tiap fase selesai: keputusan, temuan, utang teknis.)
+
+### Fase 1
+- Next 16.4 memakai `proxy.ts` (bukan middleware) dan mengaktifkan Cache Components di scaffold; dimatikan sesuai PLAN.md. Typed `LayoutProps` butuh `next typegen` (sudah masuk script `typecheck`).
+- Reveal dibuat dengan IntersectionObserver + transisi CSS (bukan `motion`) supaya tidak ada hydration mismatch; `motion` dipakai untuk mega menu, drawer, dan accordion. Reduced motion dihormati di CSS dan lewat `MotionConfig`.
+- Bug yang ditemukan lewat tes interaksi dan sudah diperbaiki: `onFocus` membuka mega menu lalu Enter menutupnya; klik mouse setelah hover menutup menu.
+- Footer sticky "reveal" hanya aktif di layar >= 1024 px dan tinggi >= 760 px (varian `reveal`), agar footer yang lebih tinggi dari viewport tidak terpotong.
+- Logo cincin adalah rekonstruksi SVG; SVG asli dari klien masih diminta.
+- `tools/shot.mjs` menandai FAIL untuk link 404; pada Fase 1-2 itu wajar (halaman Fase 3 belum ada).

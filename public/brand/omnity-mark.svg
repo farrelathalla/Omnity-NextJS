@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Recreated ring mark (orange + red). Replace with the client's original SVG when received. -->
+  <circle cx="20" cy="20" r="14" stroke="#F5A412" stroke-width="8" stroke-linecap="round" stroke-dasharray="41 46.96" transform="rotate(118 20 20)"/>
+  <circle cx="20" cy="20" r="14" stroke="#E0391F" stroke-width="8" stroke-linecap="round" stroke-dasharray="38 49.96" transform="rotate(-62 20 20)"/>
+</svg>
