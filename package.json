@@ -13,7 +13,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node --env-file-if-exists=.env.local tools/migrate.mjs",
     "check:links": "node tools/check-links.mjs",
-    "db:seed": "node --env-file-if-exists=.env.local tools/seed-admin.mjs"
+    "db:seed": "node --env-file-if-exists=.env.local tools/seed-admin.mjs",
+    "capture:demos": "node tools/capture-demos.mjs"
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.32.3",

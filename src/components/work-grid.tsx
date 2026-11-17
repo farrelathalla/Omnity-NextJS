@@ -6,18 +6,18 @@ import { useState } from "react";
 import { Icon } from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import type { Work } from "@/content/works";
+import { workCover, type Work, type WorkType } from "@/content/works";
 import { cn } from "@/lib/utils";
 
-/** Portfolio cards with a category filter. */
-export function WorkGrid({ works, categories }: { works: Work[]; categories: string[] }) {
+/** Portfolio cards with a filter by what was built. */
+export function WorkGrid({ works, types }: { works: Work[]; types: WorkType[] }) {
   const [active, setActive] = useState<string>("Semua");
-  const shown = active === "Semua" ? works : works.filter((w) => w.category === active);
+  const shown = active === "Semua" ? works : works.filter((w) => w.type === active);
 
   return (
     <div>
       <div role="group" aria-label="Filter kategori" className="mb-8 flex flex-wrap gap-2">
-        {["Semua", ...categories].map((c) => (
+        {["Semua", ...types].map((c) => (
           <button
             key={c}
             type="button"
@@ -37,7 +37,7 @@ export function WorkGrid({ works, categories }: { works: Work[]; categories: str
 
       <div className="grid gap-6 md:grid-cols-2">
         {shown.map((w, i) => {
-          const cover = w.shots[0];
+          const cover = workCover(w);
           return (
             <Link key={w.slug} href={`/karya/${w.slug}`} className="group block">
               <Card interactive className="overflow-hidden">
@@ -53,13 +53,25 @@ export function WorkGrid({ works, categories }: { works: Work[]; categories: str
                     fetchPriority={i < 1 ? "high" : undefined}
                     className="h-full w-full object-cover object-top transition-transform duration-700 ease-out-soft group-hover:scale-[1.03]"
                   />
+                  {w.demo ? (
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-ink/85 px-2.5 py-1 text-[0.68rem] font-semibold text-white backdrop-blur">
+                      <Icon name="sparkles" className="size-3" /> Bisa dicoba
+                    </span>
+                  ) : w.url ? (
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[0.68rem] font-semibold text-ink backdrop-blur">
+                      <span className="size-1.5 rounded-full bg-leaf" /> Live
+                    </span>
+                  ) : null}
                 </div>
                 <div className="p-6">
-                  <Badge>{w.category}</Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge>{w.category}</Badge>
+                    <span className="text-xs text-muted">{w.type}{w.year ? ` · ${w.year}` : ""}</span>
+                  </div>
                   <h2 className="mt-3 font-serif text-3xl tracking-tight">{w.name}</h2>
                   <p className="mt-2 line-clamp-3 text-[0.97rem] leading-relaxed text-muted">{w.summary}</p>
                   <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
-                    Lihat sorotan
+                    {w.demo ? "Coba pratinjaunya" : "Lihat sorotan"}
                     <Icon name="arrow-right" className="size-4 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>

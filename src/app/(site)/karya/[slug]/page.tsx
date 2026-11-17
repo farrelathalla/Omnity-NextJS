@@ -10,7 +10,9 @@ import { PageHero } from "@/components/page-hero";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Container, Em, Section } from "@/components/ui/section";
-import { workBySlug, works } from "@/content/works";
+import { DemoStage } from "@/components/work/demo-stage";
+import { ScrollPreview } from "@/components/work/scroll-preview";
+import { workBySlug, workCover, works } from "@/content/works";
 import { siteUrl } from "@/lib/site";
 
 export const dynamicParams = false;
@@ -23,6 +25,7 @@ export async function generateMetadata({ params }: PageProps<"/karya/[slug]">): 
   const { slug } = await params;
   const w = workBySlug(slug);
   if (!w) return {};
+  const cover = workCover(w);
   return {
     title: w.name,
     description: w.summary,
@@ -30,7 +33,7 @@ export async function generateMetadata({ params }: PageProps<"/karya/[slug]">): 
     openGraph: {
       title: `${w.name} | Karya Omnity`,
       description: w.summary,
-      images: [{ url: w.shots[0].src, width: w.shots[0].width, height: w.shots[0].height }],
+      images: [{ url: cover.src, width: cover.width, height: cover.height }],
     },
   };
 }
@@ -40,8 +43,10 @@ export default async function WorkPage({ params }: PageProps<"/karya/[slug]">) {
   const w = workBySlug(slug);
   if (!w) notFound();
 
-  const desktop = w.shots.filter((s) => s.kind === "desktop");
-  const mobile = w.shots.filter((s) => s.kind === "mobile");
+  // Demo screenshots only feed cards and the marquee; the page shows the demo itself.
+  const desktop = w.demo ? [] : w.shots.filter((s) => s.kind === "desktop");
+  const mobile = w.demo ? [] : w.shots.filter((s) => s.kind === "mobile");
+  const demo = w.demo ? { ...w, demo: w.demo } : null;
   const idx = works.findIndex((x) => x.slug === w.slug);
   const next = works[(idx + 1) % works.length];
 
@@ -57,16 +62,57 @@ export default async function WorkPage({ params }: PageProps<"/karya/[slug]">) {
         lead={w.summary}
         actions={
           <>
-            <ButtonLink href={w.url} target="_blank" rel="noopener noreferrer" size="lg" shape="pill">
-              Kunjungi {w.host}
-              <Icon name="arrow-up-right" className="size-4" />
-            </ButtonLink>
-            <ButtonLink href="/mulai" variant="secondary" size="lg" shape="pill">
+            {w.url ? (
+              <ButtonLink href={w.url} target="_blank" rel="noopener noreferrer" size="lg" shape="pill">
+                {w.linkLabel ?? `Kunjungi ${w.host}`}
+                <Icon name="arrow-up-right" className="size-4" />
+              </ButtonLink>
+            ) : null}
+            {w.related ? (
+              <ButtonLink href={w.related.href} variant={w.url ? "secondary" : "primary"} size="lg" shape="pill">
+                {w.related.label}
+              </ButtonLink>
+            ) : null}
+            <ButtonLink href="/mulai" variant={w.url || w.related ? "secondary" : "primary"} size="lg" shape="pill">
               Buat yang serupa
             </ButtonLink>
           </>
         }
       />
+
+      {demo ? (
+        <Section className="pb-8 pt-0 sm:pb-10 sm:pt-0">
+          <Container>
+            <div className="mx-auto max-w-[1100px]">
+              <DemoStage work={demo} />
+              <p className="mt-4 flex items-start gap-2 text-sm text-muted">
+                <Icon name="sparkles" className="mt-0.5 size-4 shrink-0 text-accent" />
+                <span>
+                  <span className="font-semibold text-ink">Pratinjau interaktif.</span> {demo.demo.note}
+                </span>
+              </p>
+            </div>
+          </Container>
+        </Section>
+      ) : w.fullPage ? (
+        <Section className="pb-8 pt-0 sm:pb-10 sm:pt-0">
+          <Container>
+            <div className="mx-auto max-w-[1100px]">
+              <ScrollPreview
+                src={w.fullPage.src}
+                width={w.fullPage.width}
+                height={w.fullPage.height}
+                host={w.host ?? w.name}
+                url={w.url}
+                alt={`${w.name}: tangkapan satu halaman penuh`}
+              />
+              <p className="mt-4 text-sm text-muted">
+                Arahkan kursor ke jendela untuk menelusuri satu halaman penuh, atau gulir sendiri.
+              </p>
+            </div>
+          </Container>
+        </Section>
+      ) : null}
 
       <Section className="pb-8 pt-0 sm:pb-12 sm:pt-0">
         <Container>
@@ -82,11 +128,15 @@ export default async function WorkPage({ params }: PageProps<"/karya/[slug]">) {
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-sm text-muted">{w.role}</p>
+            <p className="mt-4 text-sm text-muted">
+              {w.role}
+              {w.year ? ` · ${w.year}` : ""}
+            </p>
           </Reveal>
         </Container>
       </Section>
 
+      {desktop.length > 0 ? (
       <Section className="pt-8 sm:pt-12">
         <Container>
           <div className="mx-auto max-w-[1100px] space-y-14">
@@ -96,7 +146,7 @@ export default async function WorkPage({ params }: PageProps<"/karya/[slug]">) {
                   <BrowserFrame
                     src={s.src}
                     alt={`${w.name}: ${s.caption}`}
-                    host={w.host}
+                    host={w.host ?? w.name}
                     width={s.width}
                     height={s.height}
                     priority={i === 0}
@@ -111,6 +161,7 @@ export default async function WorkPage({ params }: PageProps<"/karya/[slug]">) {
           </div>
         </Container>
       </Section>
+      ) : null}
 
       {mobile.length > 0 ? (
         <Section className="border-y border-line bg-sand/60 py-16 sm:py-20">
@@ -166,8 +217,9 @@ export default async function WorkPage({ params }: PageProps<"/karya/[slug]">) {
           "@type": "CreativeWork",
           name: w.name,
           description: w.summary,
-          url: `${siteUrl}/karya/${w.slug}`,
-          image: `${siteUrl}${w.shots[0].src}`,
+          mainEntityOfPage: `${siteUrl}/karya/${w.slug}`,
+          image: `${siteUrl}${workCover(w).src}`,
+          ...(w.url ? { url: w.url } : {}),
           creator: { "@type": "Organization", name: "Omnity" },
           about: w.category,
         }}

@@ -6,7 +6,10 @@
  * Opens each live site in local Chrome, scrolls through it (so lazy images and
  * reveal animations load), takes evenly spaced viewport shots at desktop
  * (1440x900 @1.5x) and mobile (390x844 @2x), and writes WebP files to
- * public/work/<slug>/{d,m}-<n>.webp. Re-run when a site changes.
+ * public/work/<slug>/{d,m}-<n>.webp. It also saves one full-page desktop
+ * capture (fp.webp, 1200 px wide) for the scrolling preview on /karya/<slug>.
+ * Re-run when a site changes, then update `fullPage.height` in works.ts with
+ * the height this script prints.
  */
 import { existsSync, mkdirSync } from "node:fs";
 import { chromium } from "playwright-core";
@@ -16,7 +19,11 @@ const SITES = [
   { slug: "saiga-conservation", url: "https://saiga-conservation.org/" },
   { slug: "lextera-survey", url: "https://lexterasurveyindonesia.com/" },
   { slug: "ncb-living", url: "https://nirwanacb.com/en" },
+  { slug: "sb-hospitality", url: "https://sbhospitality.id/" },
+  { slug: "azrigah", url: "https://azrigah.com/" },
 ];
+const FULL_WIDTH = 1200;
+const FULL_MAX_HEIGHT = 12000;
 const SHOTS = { d: 6, m: 4 };
 
 const only = process.argv[2]?.split(",");
@@ -72,6 +79,21 @@ for (const site of SITES.filter((s) => !only || only.includes(s.slug))) {
         .toFile(`${dir}/${kind}-${i}.webp`);
     }
     console.log(`${site.slug} ${kind}: ${SHOTS[kind]} shots (page height ${maxY + vp.height}px)`);
+
+    if (!mobile) {
+      // Fixed headers would repeat in a full-page capture; pin them to the top.
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+      await page.waitForTimeout(1200);
+      const png = await page.screenshot({ fullPage: true });
+      const out = sharp(png).resize({ width: FULL_WIDTH });
+      const { height } = await out.toBuffer({ resolveWithObject: true }).then((r) => r.info);
+      await sharp(png)
+        .resize({ width: FULL_WIDTH })
+        .extract({ left: 0, top: 0, width: FULL_WIDTH, height: Math.min(height, FULL_MAX_HEIGHT) })
+        .webp({ quality: 72 })
+        .toFile(`${dir}/fp.webp`);
+      console.log(`${site.slug} fp: ${FULL_WIDTH}x${Math.min(height, FULL_MAX_HEIGHT)}`);
+    }
     await ctx.close();
   }
 }

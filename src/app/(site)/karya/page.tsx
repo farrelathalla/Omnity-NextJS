@@ -4,12 +4,12 @@ import { PageHero } from "@/components/page-hero";
 import { ButtonLink } from "@/components/ui/button";
 import { Container, Em } from "@/components/ui/section";
 import { WorkGrid } from "@/components/work-grid";
-import { workCategories, works } from "@/content/works";
+import { works, workTypes } from "@/content/works";
 
 export const metadata: Metadata = {
   title: "Karya",
   description:
-    "Website yang pernah kami bangun: Saiga Conservation Alliance, Lextera Survey Indonesia, dan NCB Living. Lihat sorotan desktop dan mobile.",
+    "Website, platform, dan aplikasi yang pernah kami bangun: OmniPay, C-Access, SB Hospitality, Saiga Conservation Alliance, dan lainnya. Sebagian bisa langsung dicoba.",
   alternates: { canonical: "/karya" },
 };
 
@@ -24,7 +24,7 @@ export default function WorksPage() {
             Karya yang <Em tone="ink">pernah kami buat.</Em>
           </>
         }
-        lead="Website yang sudah berjalan, dari organisasi konservasi internasional sampai distributor teknologi survei dan studio arsitektur."
+        lead="Website, platform pembayaran, dan aplikasi mobile, dari organisasi konservasi internasional sampai industri manufaktur dan hospitality. Proyek bertanda Bisa dicoba punya pratinjau interaktif."
         actions={
           <ButtonLink href="/mulai" shape="pill">
             Mulai Proyek
@@ -33,7 +33,7 @@ export default function WorksPage() {
       />
       <section className="pb-24">
         <Container>
-          <WorkGrid works={works} categories={workCategories} />
+          <WorkGrid works={works} types={workTypes} />
         </Container>
       </section>
       <CtaBand />
