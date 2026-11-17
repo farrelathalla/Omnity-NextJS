@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { VerifiedToast } from "@/components/auth/verified-toast";
 import { JsonLd } from "@/components/json-ld";
-import { StagingBadge } from "@/components/layout/staging-badge";
 import { MotionProvider } from "@/components/motion/provider";
 import { googleEnabled } from "@/lib/google";
 import { isStaging, site, siteUrl } from "@/lib/site";
@@ -67,7 +66,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </Suspense>
           </AuthProvider>
         </MotionProvider>
-        <StagingBadge />
         <JsonLd
           data={{
             "@context": "https://schema.org",

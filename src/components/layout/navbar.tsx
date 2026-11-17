@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { useAuth, type AuthUser } from "@/components/auth/auth-provider";
 import { OmnityLogo } from "@/components/brand/logo";
 import { Icon } from "@/components/icon";
@@ -367,8 +368,17 @@ function MobileDrawer({
   onSignOut: () => void;
 }) {
   const [section, setSection] = useState<MenuKey | null>(null);
+  // Portal to <body>: the sticky header gets backdrop-filter once the page scrolls,
+  // which turns it into the containing block for `fixed` children and would squash
+  // the drawer into the 64px header.
+  const mounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  if (!mounted) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open ? (
         <motion.div
@@ -472,9 +482,12 @@ function MobileDrawer({
           </div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
+
+const noopSubscribe = () => () => {};
 
 function Accordion({
   label,
