@@ -1,9 +1,48 @@
 # Pindah dari WordPress ke Next.js (dan kembali)
 
-Status saat ini: **belum ada cutover.** `omnity.co.id` masih WordPress di Hostinger
-(PHP 8.3, tema Impreza), dan versi Next.js hidup di `https://staging.omnity.co.id`.
-Dokumen ini adalah prosedur untuk pindah, plus cara mundur. Jangan menjalankan langkah
-cutover tanpa persetujuan eksplisit pemilik.
+Status: **cutover selesai 2026-11-17.** `omnity.co.id` sekarang menjalankan aplikasi Next.js
+ini (website Hostinger yang sama, Node.js 22). `staging.omnity.co.id` dinonaktifkan dan
+mengalihkan (301) ke `omnity.co.id`.
+
+## Yang dilakukan saat cutover (2026-11-17)
+
+1. WordPress Hostinger diarsipkan di server, **di luar folder website**:
+   `~/omnity-wordpress-archive/2026-11-17/` berisi `public_html/` (salinan persis, 413 MB),
+   `db-u398445816_9gpQN.sql.gz` (48 tabel) dan `README.txt` (cara mengaktifkan lagi).
+   Database WordPress `u398445816_9gpQN` tidak dihapus.
+2. Env produksi diset di website `omnity.co.id` (`SITE_ENV=production`,
+   `SITE_URL=https://omnity.co.id`, `AUTH_SECRET` baru). Aplikasi memakai database yang sama
+   dengan staging (`u398445816_omnity_staging`), jadi admin, pengguna, dan artikel ikut pindah.
+   Upload disalin ke `domains/omnity.co.id/storage/uploads`.
+3. Build dari arsip (DEPLOYMENT.md bagian 3) ke `omnity.co.id`. Hostinger mempertahankan
+   `.htaccess` WordPress lama dan menambahkan baris Passenger di bawahnya; aturan WordPress
+   dan cPanel dibuang sehingga tinggal blok `Passenger*`.
+4. Staging: `.htaccess` diganti redirect 301 ke `omnity.co.id`; konfigurasi aslinya disimpan
+   di `domains/staging.omnity.co.id/htaccess.staging-active.bak`.
+
+## Mengaktifkan lagi WordPress
+
+Lewat SSH (ikuti `README.txt` di folder arsip):
+
+```
+cd ~/domains/omnity.co.id
+mv public_html public_html.nextjs-$(date +%F)
+cp -a ~/omnity-wordpress-archive/2026-11-17/public_html public_html
+```
+
+Lalu purge cache CDN di hPanel dan cek `https://omnity.co.id` memuat teks
+"Omnity Solusi Integrasi". Untuk kembali ke Next.js, balik langkahnya (atau deploy ulang).
+WordPress versi cPanel lama (`103.140.90.234`, snapshot 2026-11-05) juga masih utuh.
+
+## Mengaktifkan lagi staging
+
+`cp ~/domains/staging.omnity.co.id/htaccess.staging-active.bak ~/domains/staging.omnity.co.id/public_html/.htaccess`.
+Ingat staging memakai database yang sama dengan produksi; buat database terpisah dulu bila
+staging dipakai untuk uji coba.
+
+---
+
+Bagian di bawah ini adalah catatan perencanaan sebelum cutover (arsip).
 
 ## Peta kondisi sekarang
 
