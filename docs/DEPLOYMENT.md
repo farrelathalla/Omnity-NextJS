@@ -27,7 +27,7 @@ Jangan pernah memasukkan nilai asli ke repo. Daftar kunci ada di `.env.example`.
 
 | Kunci | Staging | Produksi |
 |---|---|---|
-| `SITE_ENV` | `staging` (menambah `noindex` + lencana pratinjau) | `production` |
+| `SITE_ENV` | `staging` (menambah `noindex`) | `production` |
 | `SITE_URL` | `https://staging.omnity.co.id` | `https://omnity.co.id` |
 | `DATABASE_URL` | `mysql://<user>:<password>@127.0.0.1:3306/<db>` | database terpisah |
 | `AUTH_SECRET` | acak, 32+ byte (`openssl rand -base64 48`) | **berbeda** dari staging |
