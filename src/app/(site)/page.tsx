@@ -4,6 +4,7 @@ import { Hero } from "@/components/home/hero";
 import { ProcessSection } from "@/components/home/process-section";
 import { ProductsSection } from "@/components/home/products-section";
 import { ServicesSection } from "@/components/home/services-section";
+import { TestimonialSection } from "@/components/home/testimonial-section";
 import { UseCasesSection } from "@/components/home/use-cases-section";
 import { WorksMarquee } from "@/components/home/works-marquee";
 
@@ -18,6 +19,7 @@ export default function HomePage() {
       <ProductsSection />
       <ServicesSection />
       <ProcessSection />
+      <TestimonialSection />
       <UseCasesSection />
       <ContentSection />
       <CtaBand />
