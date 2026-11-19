@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 const review = {
   client: "Saiga Conservation Alliance",
   short: "SCA",
+  person: "Jessica",
   project: "Website organisasi konservasi internasional",
   href: "/karya/saiga-conservation",
   photo: "/testimonials/saiga-conservation.webp",
@@ -98,7 +99,7 @@ export function TestimonialSection() {
             <div className="relative min-h-[22rem] overflow-hidden sm:min-h-[28rem] lg:min-h-full">
               <Image
                 src={review.photo}
-                alt="Perwakilan Saiga Conservation Alliance di lapangan saat matahari terbenam"
+                alt="Jessica dari Saiga Conservation Alliance di lapangan saat matahari terbenam"
                 fill
                 sizes="(min-width: 1024px) 520px, 100vw"
                 quality={85}
@@ -228,7 +229,10 @@ export function TestimonialSection() {
                 )}
               >
                 <div>
-                  <p className="font-semibold">{review.client} ({review.short})</p>
+                  <p className="font-serif text-2xl leading-none tracking-tight">{review.person}</p>
+                  <p className="mt-1.5 text-sm font-semibold text-white/85">
+                    {review.client} ({review.short})
+                  </p>
                   <p className="mt-0.5 text-sm text-white/55">{review.project}</p>
                 </div>
                 <Link
